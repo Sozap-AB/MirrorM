@@ -1,0 +1,36 @@
+﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
+using FishingTourServerTests.Tests.DataAccessLayer.Models;
+using MirrorM.Relations;
+
+namespace MirrorM.Tests.Models
+{
+    [Entity("player_groups")]
+    public class PlayerGroup : Entity
+    {
+        public const string CONNECTION_TABLE_PLAYER = "player_group_player";
+        public const string CONNECTION_KEY = "group_id";
+
+        public const string FIELD_NAME = "name";
+
+        [Field(FIELD_NAME)]
+        public string Name
+        {
+            get => GetValue<string>(FIELD_NAME);
+            set => SetValue(FIELD_NAME, value);
+        }
+
+        public IRelationIdManyToIdMany<PlayerGroup> Groups => GetRelationManyToManyForeign<PlayerGroup>(
+            CONNECTION_TABLE_PLAYER,
+            CONNECTION_KEY,
+            Player.CONNECTION_KEY
+        );
+
+        public PlayerGroup(IContext db) : base(db)
+        {
+        }
+
+        public PlayerGroup(IContext db, IFields fields) : base(db, fields)
+        {
+        }
+    }
+}
