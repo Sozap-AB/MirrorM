@@ -23,7 +23,7 @@ namespace MirrorM
 
         internal IFieldsInternal Fields { get; private set; }
         internal EntityState EntityState { get; private set; } = EntityState.New;
-        internal long OriginalVersion { get; }
+        internal long OriginalVersion { get; private set; }
         internal HashSet<string> UpdatedFields { get; } = new HashSet<string>();
 
         private IDictionary<string, object> RelationCache { get; } = new Dictionary<string, object>();
@@ -234,6 +234,29 @@ namespace MirrorM
         internal IReadOnlyDictionary<string, object?> GetModifications()
         {
             return Fields.GetEnumerable().Where(f => UpdatedFields.Contains(f.Key)).ToDictionary(f => f.Key, f => f.Value);
+        }
+
+        internal void UpdateFromCommited(Entity justSavedEntity)
+        {
+            if (!IsUpdated)
+            {
+                Fields.CopyFields(justSavedEntity.Fields);
+
+                return;
+            }
+
+            if (UpdatedFields.Where(f => f != FIELD_VERSION && f != FIELD_UPDATED_AT).Intersect(justSavedEntity.UpdatedFields).Any())
+            {
+                throw new TransactionEntityUpdateConflictException(); //TODO: add details to the exception
+            }
+
+            var oldUpdatedAt = UpdatedAt;
+
+            Fields.CopyFields(justSavedEntity.Fields, justSavedEntity.UpdatedFields);
+            OriginalVersion = Version;
+
+            Version++;
+            UpdatedAt = oldUpdatedAt;
         }
     }
 }

@@ -4,7 +4,6 @@ using MirrorM.AdapterInterface.Query;
 using MirrorM.AdapterInterface.Query.Conditions;
 using MirrorM.AdapterInterface.Query.Connections;
 using MirrorM.Common;
-using MirrorM.Exceptions;
 using MirrorM.Internal.Query;
 using MirrorM.Internal.Query.Builder;
 using MirrorM.Internal.Query.Cache;
@@ -354,19 +353,7 @@ namespace MirrorM.Internal
                     }
                     else if (item.Value.IsUpdated)
                     {
-                        if (!to.EntityStorage[item.Key].IsUpdated)
-                        {
-                            to.EntityStorage[item.Key].Fields.CopyFields(item.Value.Fields);
-                        }
-                        else if (!to.EntityStorage[item.Key].UpdatedFields.Intersect(item.Value.UpdatedFields).Any())
-                        {
-                            //TODO: currently partial merge is not working cause of special fields, it needs to be fixed
-                            to.EntityStorage[item.Key].Fields.CopyFields(item.Value.Fields, item.Value.UpdatedFields);
-                        }
-                        else
-                        {
-                            throw new TransactionEntityUpdateConflictException(); //TODO: add details to the exception
-                        }
+                        to.EntityStorage[item.Key].UpdateFromCommited(item.Value);
                     }
                 }
             }
@@ -383,7 +370,7 @@ namespace MirrorM.Internal
                 {
                     await action();
 
-                    await CommitAsync();
+                    await CommitAsync(false);
                 });
             }
             finally
