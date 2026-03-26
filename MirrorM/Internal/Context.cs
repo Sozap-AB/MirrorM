@@ -10,7 +10,6 @@ using MirrorM.Internal.Query.Cache;
 using MirrorM.Internal.Query.Modifications;
 using MirrorM.Internal.Query.Modifications.Connections;
 using MirrorM.Internal.Query.Storage;
-using MirrorM.Internal.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -37,17 +36,14 @@ namespace MirrorM.Internal
 
         private IDatabaseConnection DatabaseConnection { get; }
 
-        private IReflectionCache ReflectionCache { get; }
-
         private Memory ContextMemory { get; set; }
 
         private HashSet<QueryCacheItem> ExecutedQueriesCache => ContextMemory.ExecutedQueriesCache;
         private Dictionary<Guid, Entity> EntityStorage => ContextMemory.EntityStorage;
         private Dictionary<string, ConnectionTableStorage> ConnectionStorage => ContextMemory.ConnectionStorage;
 
-        public Context(IReflectionCache reflectionCache, IDatabaseConnection databaseConnection)
+        public Context(IDatabaseConnection databaseConnection)
         {
-            ReflectionCache = reflectionCache;
             DatabaseConnection = databaseConnection;
 
             ContextMemory = new Memory();
