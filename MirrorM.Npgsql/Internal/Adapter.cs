@@ -10,17 +10,24 @@ namespace MirrorM.Npgsql.Internal
         public string ConnectionString { get; }
 
         private NpgsqlDataSource Source { get; }
+        private Action<NpgsqlDataSourceBuilder>? NpgsqlConfigurer { get; }
 
-        public Adapter(string connectionString)
+        public Adapter(string connectionString, Action<NpgsqlDataSourceBuilder>? npgsqlConfigurer)
         {
             ConnectionString = connectionString;
+            NpgsqlConfigurer = npgsqlConfigurer;
 
             Source = BuildSource();
         }
 
         private NpgsqlDataSource BuildSource()
         {
-            return new NpgsqlDataSourceBuilder(ConnectionString).Build();
+            var builder = new NpgsqlDataSourceBuilder(ConnectionString);
+
+            if (NpgsqlConfigurer != null)
+                NpgsqlConfigurer(builder);
+
+            return builder.Build();
         }
 
         public async Task<IDatabaseConnection> CreateConnectionAsync()
@@ -31,7 +38,7 @@ namespace MirrorM.Npgsql.Internal
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this); // csharpsquid:S3881 recommendation
         }
 
         protected virtual void Dispose(bool disposing)

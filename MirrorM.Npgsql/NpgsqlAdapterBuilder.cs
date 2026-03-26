@@ -1,5 +1,6 @@
 ﻿using MirrorM.AdapterInterface;
 using MirrorM.Npgsql.Internal;
+using Npgsql;
 using System;
 
 namespace MirrorM.DatabaseAdapters.Postgresql
@@ -7,6 +8,7 @@ namespace MirrorM.DatabaseAdapters.Postgresql
     public class NpgsqlAdapterBuilder
     {
         internal string? ConnectionString { get; private set; }
+        internal Action<NpgsqlDataSourceBuilder>? NpgsqlConfigurer { get; private set; }
 
         public NpgsqlAdapterBuilder()
         {
@@ -19,12 +21,18 @@ namespace MirrorM.DatabaseAdapters.Postgresql
             return this;
         }
 
+        public NpgsqlAdapterBuilder UseNpgsqlConfigurer(Action<NpgsqlDataSourceBuilder> npgsqlConfigurer)
+        {
+            NpgsqlConfigurer = npgsqlConfigurer;
+            return this;
+        }
+
         public IDatabaseAdapter Build()
         {
             if (string.IsNullOrEmpty(ConnectionString))
                 throw new InvalidOperationException("Connection string is not set.");
 
-            return new Adapter(ConnectionString);
+            return new Adapter(ConnectionString, NpgsqlConfigurer);
         }
     }
 }
