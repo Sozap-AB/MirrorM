@@ -1,10 +1,7 @@
-﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
-using MirrorM.Exceptions;
-using MirrorM.Internal.Common;
+﻿using MirrorM.Internal.Common;
 using MirrorM.Relations;
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace MirrorM.Internal.Relations
@@ -19,7 +16,7 @@ namespace MirrorM.Internal.Relations
         {
             Owner = owner;
             FieldProvider = fieldProvider;
-            ForeignKey = ReflectionTools.GetPropertyFromSelector(fieldProvider).GetCustomAttribute<FieldAttribute>()?.FieldName ?? throw new FieldNameNotFoundException();
+            ForeignKey = ReflectionTools.GetFieldNameFromSelector(fieldProvider);
         }
 
         public void AttachTo(T entity)

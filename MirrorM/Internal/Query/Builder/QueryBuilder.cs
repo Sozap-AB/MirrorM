@@ -1,5 +1,6 @@
 ﻿using MirrorM.AdapterInterface.Query;
 using MirrorM.AdapterInterface.Query.Conditions;
+using MirrorM.Internal.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -51,16 +52,18 @@ namespace MirrorM.Internal.Query.Builder
             throw new NotImplementedException();
         }
 
-        public IQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector)
+        public IQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> fieldSelector)
         {
-            //Sortings.Add(); //TODO: get field name from keySelector
+            SortingsWritable.Add(new Sorting(ReflectionTools.GetFieldNameFromSelector(fieldSelector), true));
 
             return this;
         }
 
-        public IQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
+        public IQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> fieldSelector)
         {
-            throw new NotImplementedException();
+            SortingsWritable.Add(new Sorting(ReflectionTools.GetFieldNameFromSelector(fieldSelector), false));
+
+            return this;
         }
 
         public IQuery<T> Skip(int count)

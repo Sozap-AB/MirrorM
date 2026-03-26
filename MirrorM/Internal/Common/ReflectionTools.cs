@@ -1,4 +1,6 @@
-﻿using System;
+﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
+using MirrorM.Exceptions;
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -22,6 +24,13 @@ namespace MirrorM.Internal.Common
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        public static string GetFieldNameFromSelector(
+            Expression selector
+        )
+        {
+            return GetPropertyFromSelector(selector).GetCustomAttribute<FieldAttribute>()?.FieldName ?? throw new FieldNameNotFoundException();
         }
     }
 }
