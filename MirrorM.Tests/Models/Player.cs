@@ -2,6 +2,7 @@
 using MirrorM;
 using MirrorM.Relations;
 using MirrorM.Tests.Models;
+using MirrorM.Tests.Tools;
 
 namespace FishingTourServerTests.Tests.DataAccessLayer.Models
 {
@@ -35,6 +36,8 @@ namespace FishingTourServerTests.Tests.DataAccessLayer.Models
             PlayerGroup.CONNECTION_KEY
         );
         public IRelationIdToFieldMany<PlayerPowerup> PlayerPowerups => GetRelationIdToFieldMany<PlayerPowerup>(x => x.PlayerId);
+
+        public string Rank => ((RankCalculator)SuperContext).CalculateRank(Level);
 
         public Player(IContext db, string name, int level) : base(db)
         {
