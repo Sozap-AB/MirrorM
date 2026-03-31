@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace MirrorM.Npgsql.Internal
@@ -41,10 +40,7 @@ namespace MirrorM.Npgsql.Internal
         {
             var cmd = new NpgsqlCommand(sql, PgConnection);
 
-            foreach (var parameter in parameters)
-            {
-                cmd.Parameters.AddWithValue(parameter.Name, parameter.Value ?? DBNull.Value);
-            }
+            AddParametersToCollection(cmd.Parameters, parameters);
 
             return cmd;
         }
@@ -118,10 +114,7 @@ namespace MirrorM.Npgsql.Internal
         {
             await using var cmd = new NpgsqlCommand(sql, PgConnection);
 
-            foreach (var parameter in parameters)
-            {
-                cmd.Parameters.AddWithValue(parameter.Name, parameter.Value ?? DBNull.Value);
-            }
+            AddParametersToCollection(cmd.Parameters, parameters);
 
             return await cmd.ExecuteNonQueryAsync();
         }
@@ -150,19 +143,84 @@ namespace MirrorM.Npgsql.Internal
             }
         }
 
-        private (object, NpgsqlDbType?) MapValueForSaving(object? v)
+        private (object, NpgsqlDbType?) MapValueForSaving(SqlParameterValue v)
         {
-            if (v == null)
+            NpgsqlDbType ConvertToNpgsqlDbType(SqlFieldType sqlType)
+            {
+                return sqlType switch
+                {
+                    SqlFieldType.Bigint => NpgsqlDbType.Bigint,
+                    SqlFieldType.Bigserial => NpgsqlDbType.Bigint,
+                    SqlFieldType.Bit => NpgsqlDbType.Bit,
+                    SqlFieldType.BitVarying => NpgsqlDbType.Varbit,
+                    SqlFieldType.Boolean => NpgsqlDbType.Boolean,
+                    SqlFieldType.Box => NpgsqlDbType.Box,
+                    SqlFieldType.Bytea => NpgsqlDbType.Bytea,
+                    SqlFieldType.Character => NpgsqlDbType.Char,
+                    SqlFieldType.CharacterVarying => NpgsqlDbType.Varchar,
+                    SqlFieldType.Cidr => NpgsqlDbType.Cidr,
+                    SqlFieldType.Circle => NpgsqlDbType.Circle,
+                    SqlFieldType.Date => NpgsqlDbType.Date,
+                    SqlFieldType.DoublePrecision => NpgsqlDbType.Double,
+                    SqlFieldType.Inet => NpgsqlDbType.Inet,
+                    SqlFieldType.Integer => NpgsqlDbType.Integer,
+                    SqlFieldType.Interval => NpgsqlDbType.Interval,
+                    SqlFieldType.Json => NpgsqlDbType.Json,
+                    SqlFieldType.Jsonb => NpgsqlDbType.Jsonb,
+                    SqlFieldType.Line => NpgsqlDbType.Line,
+                    SqlFieldType.Lseg => NpgsqlDbType.LSeg,
+                    SqlFieldType.Macaddr => NpgsqlDbType.MacAddr,
+                    SqlFieldType.Macaddr8 => NpgsqlDbType.MacAddr8,
+                    SqlFieldType.Money => NpgsqlDbType.Money,
+                    SqlFieldType.Numeric => NpgsqlDbType.Numeric,
+                    SqlFieldType.Path => NpgsqlDbType.Path,
+                    SqlFieldType.Point => NpgsqlDbType.Point,
+                    SqlFieldType.Polygon => NpgsqlDbType.Polygon,
+                    SqlFieldType.Real => NpgsqlDbType.Real,
+                    SqlFieldType.Smallint => NpgsqlDbType.Smallint,
+                    SqlFieldType.Smallserial => NpgsqlDbType.Smallint,
+                    SqlFieldType.Serial => NpgsqlDbType.Integer,
+                    SqlFieldType.Text => NpgsqlDbType.Text,
+                    SqlFieldType.Time => NpgsqlDbType.Time,
+                    SqlFieldType.TimeWithTimeZone => NpgsqlDbType.TimeTz,
+                    SqlFieldType.Timestamp => NpgsqlDbType.Timestamp,
+                    SqlFieldType.TimestampWithTimeZone => NpgsqlDbType.TimestampTz,
+                    SqlFieldType.Tsquery => NpgsqlDbType.TsQuery,
+                    SqlFieldType.Tsvector => NpgsqlDbType.TsVector,
+                    SqlFieldType.Uuid => NpgsqlDbType.Uuid,
+                    SqlFieldType.Xml => NpgsqlDbType.Xml,
+                    _ => throw new NotSupportedException($"SqlFieldType {sqlType} is not supported.")
+                };
+            }
+
+            if (v.Value == DBNull.Value)
             {
                 return (DBNull.Value, null);
             }
 
-            if (v is JsonNode node) //TODO: should it be here? (maybe add mechanics of custom converters)
+            if (v.SqlType.HasValue)
             {
-                return (node.ToJsonString(), NpgsqlDbType.Jsonb);
+                return (v.Value, ConvertToNpgsqlDbType(v.SqlType.Value));
             }
 
-            return (v, null);
+            return (v.Value, null);
+        }
+
+        private void AddParametersToCollection(NpgsqlParameterCollection collection, IEnumerable<SqlParameter> parameters)
+        {
+            foreach (var parameter in parameters)
+            {
+                var (value, type) = MapValueForSaving(parameter.Value);
+
+                if (!type.HasValue)
+                {
+                    collection.AddWithValue(parameter.Name, value);
+                }
+                else
+                {
+                    collection.AddWithValue(parameter.Name, type.Value, value);
+                }
+            }
         }
 
         public async Task ExecuteCommandBatchAsync(IEnumerable<IModificationSchema> expressions, bool createTransaction)
@@ -171,19 +229,7 @@ namespace MirrorM.Npgsql.Internal
             {
                 var command = new NpgsqlBatchCommand(exp.SqlString);
 
-                foreach (var p in exp.Parameters)
-                {
-                    var (value, type) = MapValueForSaving(p.Value);
-
-                    if (!type.HasValue)
-                    {
-                        command.Parameters.AddWithValue(p.Name, value);
-                    }
-                    else
-                    {
-                        command.Parameters.AddWithValue(p.Name, type.Value, value);
-                    }
-                }
+                AddParametersToCollection(command.Parameters, exp.Parameters);
 
                 return command;
             }

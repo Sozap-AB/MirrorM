@@ -19,8 +19,6 @@ namespace MirrorM.Internal
 
         public T GetValue<T>(string field)
         {
-            //TODO: check required + exisiting type against converters from outer serivce (datetime conversions we can register in library, JsonNode conversion should be added in user app)
-
             return (T)Storage[field]!;
         }
 

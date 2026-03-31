@@ -10,6 +10,7 @@
 CREATE TABLE IF NOT EXISTS player_details (
     id UUID PRIMARY KEY,
     player_id UUID NOT NULL,
+    meta_data JSONB NOT NULL,
     _version BIGINT NOT NULL,
     _updated_at TIMESTAMP NOT NULL,
     _created_at TIMESTAMP NOT NULL

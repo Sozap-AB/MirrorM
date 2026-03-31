@@ -1,5 +1,6 @@
 ﻿using MirrorM.AdapterInterface.Query;
 using MirrorM.AdapterInterface.Query.Conditions;
+using MirrorM.Common;
 using System;
 using System.Collections.Generic;
 
@@ -9,9 +10,13 @@ namespace MirrorM.Internal.Query.Modifications
     {
         public IEnumerable<ExpressionBase> Conditions { get; }
 
-        public IReadOnlyDictionary<string, object?> Fields { get; }
+        public IEnumerable<SqlParameter> Fields { get; }
 
-        public EntityUpdateStatement(Type entityType, IEnumerable<ExpressionBase> conditions, IReadOnlyDictionary<string, object?> fields) : base(entityType)
+        public EntityUpdateStatement(
+            Type entityType,
+            IEnumerable<ExpressionBase> conditions,
+            IEnumerable<SqlParameter> fields
+        ) : base(entityType)
         {
             Conditions = conditions;
             Fields = fields;

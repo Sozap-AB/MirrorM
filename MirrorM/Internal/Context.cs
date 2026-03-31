@@ -10,6 +10,7 @@ using MirrorM.Internal.Query.Cache;
 using MirrorM.Internal.Query.Modifications;
 using MirrorM.Internal.Query.Modifications.Connections;
 using MirrorM.Internal.Query.Storage;
+using MirrorM.TypeConversion;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -30,21 +31,23 @@ namespace MirrorM.Internal
         private sealed class Memory
         {
             public HashSet<QueryCacheItem> ExecutedQueriesCache { get; } = new HashSet<QueryCacheItem>();
-            public Dictionary<Guid, Entity> EntityStorage { get; } = new Dictionary<Guid, Entity>();
-            public Dictionary<string, ConnectionTableStorage> ConnectionStorage { get; } = new Dictionary<string, ConnectionTableStorage>();
+            public IDictionary<Guid, Entity> EntityStorage { get; } = new Dictionary<Guid, Entity>();
+            public IDictionary<string, ConnectionTableStorage> ConnectionStorage { get; } = new Dictionary<string, ConnectionTableStorage>();
         }
 
         private IDatabaseConnection DatabaseConnection { get; }
+        private IEnumerable<ITypeConverter> TypeConverters { get; }
 
         private Memory ContextMemory { get; set; }
 
         private HashSet<QueryCacheItem> ExecutedQueriesCache => ContextMemory.ExecutedQueriesCache;
-        private Dictionary<Guid, Entity> EntityStorage => ContextMemory.EntityStorage;
-        private Dictionary<string, ConnectionTableStorage> ConnectionStorage => ContextMemory.ConnectionStorage;
+        private IDictionary<Guid, Entity> EntityStorage => ContextMemory.EntityStorage;
+        private IDictionary<string, ConnectionTableStorage> ConnectionStorage => ContextMemory.ConnectionStorage;
 
-        public Context(IDatabaseConnection databaseConnection)
+        public Context(IDatabaseConnection databaseConnection, IEnumerable<ITypeConverter> typeConverters)
         {
             DatabaseConnection = databaseConnection;
+            TypeConverters = typeConverters;
 
             ContextMemory = new Memory();
         }
@@ -245,17 +248,15 @@ namespace MirrorM.Internal
 
             while (i < record.FieldCount)
             {
-                object id = record.GetValue(i);
-
-                Dictionary<string, object?>? collection = id != DBNull.Value ? new Dictionary<string, object?>() {
-                    { record.GetName(i), id }
+                Dictionary<string, object?>? collection = !record.IsDBNull(i) ? new Dictionary<string, object?>() {
+                    { record.GetName(i), record.GetGuid(i) }
                 } : null;
 
                 i++;
 
                 while (i < record.FieldCount && record.GetName(i) != Entity.FIELD_ID)
                 {
-                    collection?.Add(record.GetName(i), record.GetValue(i));
+                    collection?.Add(record.GetName(i), ReadValue(record, i));
 
                     i++;
                 }
@@ -286,15 +287,13 @@ namespace MirrorM.Internal
                 return obj;
             }
 
-            object id = record.GetValue(0);
-
             Dictionary<string, object?> collection = new Dictionary<string, object?>() {
-                { record.GetName(0), id }
+                { record.GetName(0), record.GetGuid(0) }
             };
 
             for (int i = 0; i < record.FieldCount; i++)
             {
-                collection.Add(record.GetName(i), record.GetValue(i));
+                collection.Add(record.GetName(i), ReadValue(record, i));
             }
 
             return SaveObjectToStorage(CreateEntity<T>(
@@ -314,19 +313,44 @@ namespace MirrorM.Internal
             DatabaseConnection.Dispose();
         }
 
-        public IAsyncEnumerable<IReadOnlyDictionary<string, object>> ExecuteSqlQueryAndGetRawResultAsync(string sql, params SqlParameter[] parameters)
+        public IAsyncEnumerable<IReadOnlyDictionary<string, object?>> ExecuteSqlQueryAndGetRawResultAsync(string sql, params SqlParameter[] parameters)
         {
             return DatabaseConnection.ExecuteRawSelectAsync(sql, parameters, rec =>
             {
-                var dict = new Dictionary<string, object>(capacity: rec.FieldCount);
+                var dict = new Dictionary<string, object?>(capacity: rec.FieldCount);
 
                 for (int i = 0; i < rec.FieldCount; i++)
                 {
-                    dict[rec.GetName(i)] = rec.GetValue(i);
+                    dict[rec.GetName(i)] = ReadValue(rec, i);
                 }
 
                 return dict;
             });
+        }
+
+        private object? ReadValue(IDataReader reader, int index)
+        {
+            foreach (var typeConverter in TypeConverters)
+            {
+                if (typeConverter.TryConvertOnRead(reader, index, out var result))
+                    return result;
+            }
+
+            return reader.GetValue(index);
+        }
+
+        private SqlParameterValue ConvertValueForWriting(object? value)
+        {
+            if (value == null)
+                return new SqlParameterValue(DBNull.Value, null);
+
+            foreach (var typeConverter in TypeConverters)
+            {
+                if (typeConverter.TryConvertToWrite(value, out var result))
+                    return result;
+            }
+
+            return new SqlParameterValue(value, null);
         }
 
         public Task<int> ExecuteSqlCommandAsync(string sql, params SqlParameter[] parameters)
@@ -413,13 +437,13 @@ namespace MirrorM.Internal
                         case EntityState.New:
                             return new EntityInsertStatement(
                                 i.GetType(),
-                                i.Fields.GetEnumerable().ToDictionary(f => f.Key, f => f.Value)
+                                i.Fields.GetEnumerable().Select(f => new SqlParameter(f.Key, ConvertValueForWriting(f.Value)))
                             );
                         case EntityState.Loaded:
                             return new EntityUpdateStatement(i.GetType(), new ExpressionBase[] {
                                 new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(Entity.FIELD_ID), new ExpressionConst(i.Id)),
                                 new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(Entity.FIELD_VERSION), new ExpressionConst(i.OriginalVersion))
-                            }, i.GetModifications());
+                            }, i.GetModifications().Select(f => new SqlParameter(f.Key, ConvertValueForWriting(f.Value))));
                         case EntityState.Deleted:
                             return new EntityDeleteStatement(i.GetType(), new ExpressionBase[] {
                                 new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(Entity.FIELD_ID), new ExpressionConst(i.Id)),

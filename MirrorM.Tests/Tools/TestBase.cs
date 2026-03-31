@@ -1,6 +1,7 @@
 ﻿using MirrorM;
 using MirrorM.Config;
 using MirrorM.Npgsql;
+using MirrorM.Tests.Converters;
 using MirrorM.Tests.Tools;
 
 namespace FishingTourServer.Controllers.Client
@@ -13,6 +14,7 @@ namespace FishingTourServer.Controllers.Client
         {
             ContextProvider = new ContextProviderConfigBuilder()
                 .UseNpgsqlAdapter(Constants.CONNECTION_STRING)
+                .UseTypeConverters(new JsonNodeConverter())
                 .Build();
         }
 

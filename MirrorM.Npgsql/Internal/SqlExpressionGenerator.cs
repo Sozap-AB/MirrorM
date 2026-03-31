@@ -16,14 +16,16 @@ namespace MirrorM.Npgsql.Internal
     {
         private sealed class ParametersCollection
         {
-            private Dictionary<string, object> ParametersWritable { get; } = new Dictionary<string, object>();
+            private IList<SqlParameter> ParametersWritable { get; } = new List<SqlParameter>();
 
-            public IReadOnlyDictionary<string, object> Parameters => ParametersWritable;
+            public IEnumerable<SqlParameter> Parameters => ParametersWritable;
 
-            public string AddParameter(object value)
+            public string AddParameter(SqlParameterValue value)
             {
                 var nextP = $"p{ParametersWritable.Count + 1}";
-                ParametersWritable[nextP] = value;
+
+                ParametersWritable.Add(new SqlParameter(nextP, value));
+
                 return nextP;
             }
         }
@@ -69,7 +71,7 @@ namespace MirrorM.Npgsql.Internal
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -106,7 +108,7 @@ namespace MirrorM.Npgsql.Internal
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -127,7 +129,7 @@ namespace MirrorM.Npgsql.Internal
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -138,14 +140,14 @@ namespace MirrorM.Npgsql.Internal
             StringBuilder sqlBuilder = new StringBuilder();
 
             sqlBuilder.Append($"INSERT INTO {schema.EntityType.GetCustomAttribute<EntityAttribute>()!.TableName} (");
-            sqlBuilder.Append(string.Join(", ", schema.Fields.Select(f => f.Key)));
+            sqlBuilder.Append(string.Join(", ", schema.Fields.Select(f => f.Name)));
             sqlBuilder.Append(") VALUES (");
-            sqlBuilder.Append(string.Join(", ", schema.Fields.Select(f => WrapConstant(f.Value, parameters))));
+            sqlBuilder.Append(string.Join(", ", schema.Fields.Select(f => WrapWritableItem(f.Value, parameters))));
             sqlBuilder.Append(")");
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -155,13 +157,13 @@ namespace MirrorM.Npgsql.Internal
             StringBuilder sqlBuilder = new StringBuilder();
 
             sqlBuilder.Append($"UPDATE {schema.EntityType.GetCustomAttribute<EntityAttribute>()!.TableName} m SET ");
-            sqlBuilder.Append(string.Join(", ", schema.Fields.Select(f => $"{f.Key} = {WrapConstant(f.Value, parameters)}")));
+            sqlBuilder.Append(string.Join(", ", schema.Fields.Select(f => $"{f.Name} = {WrapWritableItem(f.Value, parameters)}")));
             sqlBuilder.Append(" WHERE ");
             sqlBuilder.Append(string.Join(" AND ", schema.Conditions.Select(c => GenerateConditionSql(c, parameters))));
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -175,7 +177,7 @@ namespace MirrorM.Npgsql.Internal
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -188,7 +190,7 @@ namespace MirrorM.Npgsql.Internal
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -201,7 +203,7 @@ namespace MirrorM.Npgsql.Internal
 
             return new SqlExpression(
                 sqlBuilder.ToString(),
-                parameters.Parameters.Select(x => new SqlParameter(x.Key, x.Value))
+                parameters.Parameters
             );
         }
 
@@ -257,11 +259,21 @@ namespace MirrorM.Npgsql.Internal
                 case ExpressionConnectionMatch expressionConnectionMatch:
                     return $"EXISTS (SELECT 1 FROM {expressionConnectionMatch.ConnectionTable} c WHERE " +
                         $"c.{expressionConnectionMatch.OwnerKey} = m.id AND " +
-                        $"c.{expressionConnectionMatch.ForeignKey} = :{parametersCollection.AddParameter(expressionConnectionMatch.Value)}" +
+                        $"c.{expressionConnectionMatch.ForeignKey} = :{parametersCollection.AddParameter(new SqlParameterValue(expressionConnectionMatch.Value))}" +
                     ")";
                 default:
                     throw new NotSupportedException($"Unsupported expression type: {exp}");
             }
+        }
+
+        private static string WrapWritableItem(SqlParameterValue v, ParametersCollection parametersCollection)
+        {
+            if (v.Value == DBNull.Value)
+            {
+                return "NULL";
+            }
+
+            return $":{parametersCollection.AddParameter(v)}";
         }
 
         private static string WrapConstant(object? v, ParametersCollection parametersCollection)
@@ -285,7 +297,7 @@ namespace MirrorM.Npgsql.Internal
                 }
             }
 
-            return $":{parametersCollection.AddParameter(v)}";
+            return $":{parametersCollection.AddParameter(new SqlParameterValue(v))}";
         }
 
         private static void AppendConditions(IBaseEntityQuerySchema schema, StringBuilder sqlBuilder, ParametersCollection parameters)
