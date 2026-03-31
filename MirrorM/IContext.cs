@@ -1,6 +1,7 @@
 ﻿using MirrorM.Common;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Threading.Tasks;
 
 namespace MirrorM
@@ -10,7 +11,7 @@ namespace MirrorM
         IQuery<T> Query<T>() where T : Entity;
 
         IAsyncEnumerable<T> ExecuteSqlQueryAsync<T>(string sql, params SqlParameter[] parameters) where T : Entity;
-        IAsyncEnumerable<IReadOnlyDictionary<string, object>> ExecuteSqlQueryAndGetRawResultAsync(string sql, params SqlParameter[] parameters);
+        IAsyncEnumerable<IReadOnlyDictionary<string, object?>> ExecuteSqlQueryAndGetRawResultAsync(string sql, params SqlParameter[] parameters);
         Task<int> ExecuteSqlCommandAsync(string sql, params SqlParameter[] parameters);
 
         Task ExecuteTransactionAsync(Func<Task> action);
@@ -18,5 +19,6 @@ namespace MirrorM
         Task CommitAsync();
 
         void SetSuperContext(ISuperContext? superContext);
+        void SetSqlInterceptor(Action<string, IEnumerable<DbParameter>>? sqlInterceptor);
     }
 }

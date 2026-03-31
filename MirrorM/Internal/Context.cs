@@ -14,6 +14,7 @@ using MirrorM.TypeConversion;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -62,6 +63,11 @@ namespace MirrorM.Internal
         public ISuperContext? GetSuperContext()
         {
             return SuperContext;
+        }
+
+        public void SetSqlInterceptor(Action<string, IEnumerable<DbParameter>>? sqlInterceptor)
+        {
+            DatabaseConnection.SetSqlInterceptor(sqlInterceptor);
         }
 
         public IQuery<T> Query<T>() where T : Entity

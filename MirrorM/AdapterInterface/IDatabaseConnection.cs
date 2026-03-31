@@ -3,6 +3,7 @@ using MirrorM.Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Threading.Tasks;
 
 namespace MirrorM.AdapterInterface
@@ -22,5 +23,7 @@ namespace MirrorM.AdapterInterface
         Task<int> ExecuteRawCommandAsync(string sql, SqlParameter[] parameters);
 
         Task ExecuteWrappedInTransactionAsync(Func<Task> action);
+
+        void SetSqlInterceptor(Action<string, IEnumerable<DbParameter>>? sqlInterceptor);
     }
 }

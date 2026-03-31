@@ -7,6 +7,7 @@ using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,10 +26,16 @@ namespace MirrorM.Npgsql.Internal
         }
 
         private NpgsqlConnection PgConnection { get; }
+        private Action<string, IEnumerable<NpgsqlParameter>>? SqlInterceptor { get; set; } = null;
 
         public Connection(NpgsqlConnection connection)
         {
             PgConnection = connection;
+        }
+
+        public void SetSqlInterceptor(Action<string, IEnumerable<DbParameter>>? sqlInterceptor)
+        {
+            SqlInterceptor = sqlInterceptor;
         }
 
         private NpgsqlCommand CreateCommandFromExpression(SqlExpression sqlExpression)
@@ -42,6 +49,8 @@ namespace MirrorM.Npgsql.Internal
 
             AddParametersToCollection(cmd.Parameters, parameters);
 
+            InterceptSql(cmd);
+
             return cmd;
         }
 
@@ -50,6 +59,9 @@ namespace MirrorM.Npgsql.Internal
             var sql = SqlExpressionGenerator.GenerateEntitySelectSql(schema);
 
             await using var cmd = CreateCommandFromExpression(sql);
+
+            InterceptSql(cmd);
+
             await using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -63,6 +75,8 @@ namespace MirrorM.Npgsql.Internal
 
             await using var cmd = CreateCommandFromExpression(sql);
 
+            InterceptSql(cmd);
+
             return (R)Convert.ChangeType((await cmd.ExecuteScalarAsync())!, typeof(R));
         }
 
@@ -71,6 +85,9 @@ namespace MirrorM.Npgsql.Internal
             var sql = SqlExpressionGenerator.GenerateEntityMaxSql(schema);
 
             await using var cmd = CreateCommandFromExpression(sql);
+
+            InterceptSql(cmd);
+
             await using var reader = await cmd.ExecuteReaderAsync();
 
             if (await reader.ReadAsync())
@@ -89,6 +106,8 @@ namespace MirrorM.Npgsql.Internal
 
             await using var cmd = CreateCommandFromExpression(sql);
 
+            InterceptSql(cmd);
+
             return (int)(await cmd.ExecuteScalarAsync())!;
         }
 
@@ -98,12 +117,17 @@ namespace MirrorM.Npgsql.Internal
 
             await using var cmd = CreateCommandFromExpression(sql);
 
+            InterceptSql(cmd);
+
             return (bool)(await cmd.ExecuteScalarAsync())!;
         }
 
         public async IAsyncEnumerable<T> ExecuteRawSelectAsync<T>(string sql, SqlParameter[] parameters, Func<IDataReader, T> recordHandler)
         {
             await using var cmd = CreateCommandFromSqlAndParameters(sql, parameters);
+
+            InterceptSql(cmd);
+
             await using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -115,6 +139,8 @@ namespace MirrorM.Npgsql.Internal
             await using var cmd = new NpgsqlCommand(sql, PgConnection);
 
             AddParametersToCollection(cmd.Parameters, parameters);
+
+            InterceptSql(cmd);
 
             return await cmd.ExecuteNonQueryAsync();
         }
@@ -274,7 +300,7 @@ namespace MirrorM.Npgsql.Internal
 
             int expectedUpdated = createTransaction ? batch.BatchCommands.Count - 1 : batch.BatchCommands.Count;
 
-            //OnExecuteSql(batch); //TODO: restore this functionality
+            InterceptSql(batch);
 
             NpgsqlTransaction? transaction = createTransaction ? await PgConnection.BeginTransactionAsync() : null;
             try
@@ -364,6 +390,25 @@ namespace MirrorM.Npgsql.Internal
         protected virtual void Dispose(bool disposing)
         {
             PgConnection.Dispose();
+        }
+
+        private void InterceptSql(NpgsqlCommand command)
+        {
+            if (SqlInterceptor == null)
+                return;
+
+            SqlInterceptor(command.CommandText, command.Parameters);
+        }
+
+        private void InterceptSql(NpgsqlBatch batch)
+        {
+            if (SqlInterceptor == null)
+                return;
+
+            foreach (NpgsqlBatchCommand command in batch.BatchCommands.Cast<NpgsqlBatchCommand>())
+            {
+                SqlInterceptor(command.CommandText, command.Parameters);
+            }
         }
     }
 }
