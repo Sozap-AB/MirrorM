@@ -30,6 +30,7 @@ namespace MirrorM
 
         internal IContext Context { get; private set; }
         internal IContextInternal ContextInternal => (IContextInternal)Context;
+        protected ISuperContext? SuperContext => ContextInternal.GetSuperContext();
 
         public bool IsUpdated => EntityState == EntityState.Loaded && UpdatedFields.Count > 0;
 

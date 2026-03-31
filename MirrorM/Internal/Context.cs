@@ -44,12 +44,24 @@ namespace MirrorM.Internal
         private IDictionary<Guid, Entity> EntityStorage => ContextMemory.EntityStorage;
         private IDictionary<string, ConnectionTableStorage> ConnectionStorage => ContextMemory.ConnectionStorage;
 
+        internal ISuperContext? SuperContext { get; private set; }
+
         public Context(IDatabaseConnection databaseConnection, IEnumerable<ITypeConverter> typeConverters)
         {
             DatabaseConnection = databaseConnection;
             TypeConverters = typeConverters;
 
             ContextMemory = new Memory();
+        }
+
+        public void SetSuperContext(ISuperContext? superContext)
+        {
+            SuperContext = superContext;
+        }
+
+        public ISuperContext? GetSuperContext()
+        {
+            return SuperContext;
         }
 
         public IQuery<T> Query<T>() where T : Entity

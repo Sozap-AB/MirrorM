@@ -20,5 +20,7 @@ namespace MirrorM.Internal
         Task<bool> ExecuteExistsQueryAsync<T>(QueryBuilder<T> builder) where T : Entity;
 
         ConnectionTableStorage? GetConnectionTableStorage(string connectionTable);
+
+        ISuperContext? GetSuperContext();
     }
 }
