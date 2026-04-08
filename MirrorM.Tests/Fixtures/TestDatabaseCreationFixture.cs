@@ -11,8 +11,8 @@ namespace FishingTourServerTests.Tests.DataAccessLayer.Fixtures
             {
                 using (var conn = await new NpgsqlDataSourceBuilder(Constants.DATABASE_INDEPENDENT_CONNECTION_STRING).Build().OpenConnectionAsync())
                 {
-                    await using (var cmd = new NpgsqlCommand("""
-                        CREATE DATABASE glassorm_tests
+                    await using (var cmd = new NpgsqlCommand($"""
+                        CREATE DATABASE {Constants.DATABASE_NAME}
                         WITH OWNER = postgres
                         ENCODING = 'UTF8'
                         CONNECTION LIMIT = -1
@@ -54,7 +54,7 @@ namespace FishingTourServerTests.Tests.DataAccessLayer.Fixtures
         {
             using (var conn = await new NpgsqlDataSourceBuilder(Constants.DATABASE_INDEPENDENT_CONNECTION_STRING).Build().OpenConnectionAsync())
             {
-                await using (var cmd = new NpgsqlCommand("DROP DATABASE glassorm_tests", conn))
+                await using (var cmd = new NpgsqlCommand($"DROP DATABASE {Constants.DATABASE_NAME}", conn))
                 {
                     await cmd.ExecuteNonQueryAsync();
                 }
