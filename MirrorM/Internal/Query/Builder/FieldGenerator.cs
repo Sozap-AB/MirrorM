@@ -1,5 +1,5 @@
-﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
-using MirrorM.AdapterInterface.Query;
+﻿using MirrorM.AdapterInterface.Query;
+using MirrorM.Attributes;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;

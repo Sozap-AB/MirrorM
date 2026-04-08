@@ -1,6 +1,4 @@
-﻿using MirrorM;
-
-namespace FishingTourServerTests.Tests.DataAccessLayer.Models
+﻿namespace MirrorM.Tests.Models
 {
     public class PlayerPowerupEnergyBoost : PlayerPowerup
     {

@@ -1,10 +1,8 @@
-﻿using MirrorM;
-using MirrorM.Config;
+﻿using MirrorM.Config;
 using MirrorM.Npgsql;
 using MirrorM.Tests.Converters;
-using MirrorM.Tests.Tools;
 
-namespace FishingTourServer.Controllers.Client
+namespace MirrorM.Tests.Tools
 {
     public class TestBase
     {

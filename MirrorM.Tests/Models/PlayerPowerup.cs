@@ -1,8 +1,7 @@
-﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
-using MirrorM;
+﻿using MirrorM.Attributes;
 using MirrorM.Relations;
 
-namespace FishingTourServerTests.Tests.DataAccessLayer.Models
+namespace MirrorM.Tests.Models
 {
     [Entity("player_powerups", subTypes: [typeof(PlayerPowerupHealthBoost), typeof(PlayerPowerupEnergyBoost)])]
     public abstract class PlayerPowerup : Entity

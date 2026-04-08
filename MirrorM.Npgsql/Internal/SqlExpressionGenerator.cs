@@ -1,7 +1,7 @@
-﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
-using MirrorM.AdapterInterface.Query;
+﻿using MirrorM.AdapterInterface.Query;
 using MirrorM.AdapterInterface.Query.Conditions;
 using MirrorM.AdapterInterface.Query.Connections;
+using MirrorM.Attributes;
 using MirrorM.Common;
 using MirrorM.Internal.Common;
 using System;

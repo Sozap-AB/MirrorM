@@ -1,10 +1,8 @@
-﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
-using MirrorM;
+﻿using MirrorM.Attributes;
 using MirrorM.Relations;
-using MirrorM.Tests.Models;
 using MirrorM.Tests.Tools;
 
-namespace FishingTourServerTests.Tests.DataAccessLayer.Models
+namespace MirrorM.Tests.Models
 {
     [Entity("players")]
     public class Player : Entity

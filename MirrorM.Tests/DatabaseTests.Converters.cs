@@ -1,4 +1,4 @@
-﻿using FishingTourServerTests.Tests.DataAccessLayer.Models;
+﻿using MirrorM.Tests.Models;
 using System.Text.Json.Nodes;
 
 namespace MirrorM.Tests

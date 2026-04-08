@@ -1,7 +1,7 @@
 ﻿using MirrorM.Tests.Tools;
 using Npgsql;
 
-namespace FishingTourServerTests.Tests.DataAccessLayer.Fixtures
+namespace MirrorM.Tests.Fixtures
 {
     internal class TestDatabaseCreationFixture : IAsyncLifetime
     {

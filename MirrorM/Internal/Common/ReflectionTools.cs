@@ -1,4 +1,4 @@
-﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
+﻿using MirrorM.Attributes;
 using MirrorM.Exceptions;
 using System;
 using System.Linq.Expressions;

@@ -1,5 +1,5 @@
-﻿using FishingTourServer.Controllers.Client;
-using MirrorM.Tests.Fixtures;
+﻿using MirrorM.Tests.Fixtures;
+using MirrorM.Tests.Tools;
 
 namespace MirrorM.Tests
 {

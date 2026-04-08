@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FishingTourServer.Sys.Services.Data.Database.Attributes
+namespace MirrorM.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class FieldAttribute : Attribute

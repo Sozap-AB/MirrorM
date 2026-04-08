@@ -1,5 +1,4 @@
-﻿using FishingTourServer.Sys.Services.Data.Database.Attributes;
-using FishingTourServerTests.Tests.DataAccessLayer.Models;
+﻿using MirrorM.Attributes;
 using MirrorM.Relations;
 
 namespace MirrorM.Tests.Models

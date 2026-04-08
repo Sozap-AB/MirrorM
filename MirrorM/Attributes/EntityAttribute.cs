@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FishingTourServer.Sys.Services.Data.Database.Attributes
+namespace MirrorM.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class EntityAttribute : Attribute
