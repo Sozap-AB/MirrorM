@@ -15,7 +15,11 @@ namespace MirrorM.Npgsql.Internal
 {
     internal class Connection : IDatabaseConnection
     {
-        private class CommandBatchFailedException : Exception
+#pragma warning disable S3871 // Exception types should be "public"
+        // This exception is used for handling issue inside this class
+        // It is not supposed to be exposed to the outside, so it doesn't need to be public
+        private sealed class CommandBatchFailedException : Exception
+#pragma warning restore S3871 // Exception types should be "public"
         {
             public NpgsqlBatch Batch { get; private set; }
 
