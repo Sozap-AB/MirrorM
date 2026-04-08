@@ -3,8 +3,21 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
 	<Nullable>enable</Nullable>
-	<Version>2.0.0</Version>
-	<VersionSuffix>rc1</VersionSuffix>
+    <OutputType>Library</OutputType>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+      
+    <Version>2.0.0</Version>
+    <VersionSuffix>rc1</VersionSuffix>
+
+    <PackageId>MirrorM</PackageId>
+    <Authors>Viacheslav Vodianov</Authors>
+    <Company>SOZAP AB (publ)</Company>
+    <Description>ORM for .NET project.</Description>
+    <PackageTags>.net;orm;database;sql</PackageTags>
+    <RepositoryUrl>https://github.com/Sozap-AB/MirrorM</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+      
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +26,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
