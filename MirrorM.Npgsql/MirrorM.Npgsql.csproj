@@ -3,6 +3,20 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+
+    <Version>2.0.0</Version>
+    <VersionSuffix>rc1</VersionSuffix>
+
+    <PackageId>MirrorM.Npgsql</PackageId>
+    <Authors>Viacheslav Vodianov</Authors>
+    <Company>SOZAP AB (publ)</Company>
+    <Description>Npgsql adapter for MirrorM ORM.</Description>
+    <PackageTags>.net;orm;database;sql;postgres</PackageTags>
+    <RepositoryUrl>https://github.com/Sozap-AB/MirrorM</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseProjectReferences)' != 'true'">
-	  <PackageReference Include="MirrorM" Version="1.0.0" />
+    <PackageReference Include="MirrorM" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +37,11 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
