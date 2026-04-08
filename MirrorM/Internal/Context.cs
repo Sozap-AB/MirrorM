@@ -126,6 +126,8 @@ namespace MirrorM.Internal
             {
                 foreach (var item in GetFilteredAndSortedEntities<T>(builder))
                     yield return item;
+
+                yield break;
             }
 
             // executing SQL and saving to storage
@@ -150,6 +152,9 @@ namespace MirrorM.Internal
                     }
                 }
             }
+
+            if (strategy == GetQueryStrategy.UseDbSelection)
+                yield break;
 
             // filtering and sorting against storage
 
@@ -237,18 +242,6 @@ namespace MirrorM.Internal
                 return defaultType;
             }
 
-            T SaveObjectToStorage<T>(T obj) where T : Entity
-            {
-                if (!EntityStorage.ContainsKey(obj.Id))
-                {
-                    EntityStorage[obj.Id] = obj;
-                }
-
-                //TODO: update/merge fields if object exists
-
-                return (T)EntityStorage[obj.Id];
-            }
-
             IEnumerable<Type> CollectEntityTypes()
             {
                 yield return query.EntityType;
@@ -266,8 +259,10 @@ namespace MirrorM.Internal
 
             while (i < record.FieldCount)
             {
+                var id = record.GetGuid(i);
+
                 Dictionary<string, object?>? collection = !record.IsDBNull(i) ? new Dictionary<string, object?>() {
-                    { record.GetName(i), record.GetGuid(i) }
+                    { record.GetName(i), id }
                 } : null;
 
                 i++;
@@ -281,10 +276,19 @@ namespace MirrorM.Internal
 
                 if (collection != null)
                 {
-                    yield return SaveObjectToStorage(CreateEntity<Entity>(
-                        DetectType(entityTypes.ElementAt(typeIndex), collection),
-                        new FieldCollection(collection)
-                    ));
+                    if (EntityStorage.TryGetValue(id, out var existingEntity))
+                    {
+                        //TODO: update/merge fields if object exists
+
+                        yield return existingEntity;
+                    }
+                    else
+                    {
+                        yield return CreateEntity<Entity>(
+                            DetectType(entityTypes.ElementAt(typeIndex), collection),
+                            new FieldCollection(collection)
+                        );
+                    }
                 }
 
                 typeIndex++;
