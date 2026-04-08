@@ -18,14 +18,15 @@ namespace MirrorM.Tests.Models
             set => SetValue(FIELD_NAME, value);
         }
 
-        public IRelationIdManyToIdMany<PlayerGroup> Groups => GetRelationManyToManyForeign<PlayerGroup>(
+        public IRelationIdManyToIdMany<Player> Players => GetRelationManyToManyForeign<Player>(
             CONNECTION_TABLE_PLAYER,
             CONNECTION_KEY,
             Player.CONNECTION_KEY
         );
 
-        public PlayerGroup(IContext db) : base(db)
+        public PlayerGroup(IContext db, string name) : base(db)
         {
+            Name = name;
         }
 
         public PlayerGroup(IContext db, IFields fields) : base(db, fields)
