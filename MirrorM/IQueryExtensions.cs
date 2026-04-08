@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MirrorM
 {
-    public static class QueryExtensions
+    public static class IQueryExtensions
     {
         public static async Task<T> FirstAsync<T>(this IQuery<T> query) where T : Entity
         {

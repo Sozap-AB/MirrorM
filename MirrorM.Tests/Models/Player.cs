@@ -35,7 +35,7 @@ namespace MirrorM.Tests.Models
         );
         public IRelationIdToFieldMany<PlayerPowerup> PlayerPowerups => GetRelationIdToFieldMany<PlayerPowerup>(x => x.PlayerId);
 
-        public string Rank => ((RankCalculator)SuperContext).CalculateRank(Level);
+        public string Rank => ((RankCalculator)SuperContext!).CalculateRank(Level);
 
         public Player(IContext db, string name, int level) : base(db)
         {

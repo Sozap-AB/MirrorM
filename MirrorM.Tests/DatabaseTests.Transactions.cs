@@ -14,13 +14,13 @@ namespace MirrorM.Tests
 
             await ExecuteWithDatabaseAsync(async db =>
             {
-                var player = await db.Query<Player>().Where(x => x.Id == playerId).FirstAsync();
+                var player = await db.GetByIdAsync<Player>(playerId);
 
                 player.Level = 10;
 
                 await db.ExecuteTransactionAsync(async () =>
                 {
-                    var txPlayer = await db.Query<Player>().Where(x => x.Id == playerId).FirstAsync();
+                    var txPlayer = await db.GetByIdAsync<Player>(playerId);
 
                     txPlayer.Name = "player2";
                 });
@@ -28,7 +28,7 @@ namespace MirrorM.Tests
 
             await ExecuteWithDatabaseAsync(async db =>
             {
-                var player = await db.Query<Player>().Where(x => x.Id == playerId).FirstAsync();
+                var player = await db.GetByIdAsync<Player>(playerId);
 
                 Assert.Equal("player2", player.Name);
                 Assert.Equal(10, player.Level);
