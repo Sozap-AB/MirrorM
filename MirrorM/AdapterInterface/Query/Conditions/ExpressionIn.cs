@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MirrorM.AdapterInterface.Query.Conditions
@@ -18,6 +19,11 @@ namespace MirrorM.AdapterInterface.Query.Conditions
                 return Enumerable.SequenceEqual(Values, ei.Values);
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Values);
         }
     }
 }

@@ -9,12 +9,14 @@ namespace MirrorM.Tests
         {
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                await ExecuteWithDatabaseAsync(async db =>
+                await ExecuteWithDatabaseAsync(db =>
                 {
                     Guid duplicatedId = Guid.NewGuid();
 
                     _ = new Player(db, duplicatedId, "player1", 5);
                     _ = new Player(db, duplicatedId, "player2", 6);
+
+                    return Task.CompletedTask;
                 });
             });
         }

@@ -8,13 +8,15 @@ namespace MirrorM.Tests
         [Fact]
         public async Task SuperContextTest()
         {
-            await ExecuteWithDatabaseAsync(async db =>
+            await ExecuteWithDatabaseAsync(db =>
             {
                 db.SetSuperContext(new RankCalculator());
 
                 var player = new Player(db, "player1", 5);
 
                 Assert.Equal("Beginner", player.Rank);
+
+                return Task.CompletedTask;
             });
         }
 
@@ -23,7 +25,7 @@ namespace MirrorM.Tests
         {
             string? insertSql = null;
 
-            await ExecuteWithDatabaseAsync(async db =>
+            await ExecuteWithDatabaseAsync(db =>
             {
                 db.SetSqlInterceptor((sql, parameters) =>
                 {
@@ -32,6 +34,8 @@ namespace MirrorM.Tests
                 });
 
                 _ = new Player(db, "player1", 5);
+
+                return Task.CompletedTask;
             });
 
             Assert.Equal("INSERT INTO players (id, _version, _created_at, _updated_at, name, level) VALUES (:p1, :p2, :p3, :p4, :p5, :p6)", insertSql);

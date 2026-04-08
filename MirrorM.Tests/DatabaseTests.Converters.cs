@@ -8,7 +8,7 @@ namespace MirrorM.Tests
         [Fact]
         public async Task JsonNodeConverterTest()
         {
-            await ExecuteWithDatabaseAsync(async db =>
+            await ExecuteWithDatabaseAsync(db =>
             {
                 var details = new PlayerDetails(db, new Player(db, "player1", 5));
 
@@ -17,6 +17,8 @@ namespace MirrorM.Tests
                     ["age"] = 30,
                     ["currency"] = "SEK"
                 };
+
+                return Task.CompletedTask;
             });
 
             await ExecuteWithDatabaseAsync(async db =>

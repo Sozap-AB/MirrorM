@@ -1,4 +1,6 @@
-﻿namespace MirrorM.AdapterInterface.Query.Conditions
+﻿using System;
+
+namespace MirrorM.AdapterInterface.Query.Conditions
 {
     public class ExpressionConst : ExpressionBase
     {
@@ -15,6 +17,11 @@
                 return Value.Equals(ec.Value);
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Value);
         }
     }
 }

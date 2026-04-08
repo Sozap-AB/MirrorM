@@ -1,4 +1,6 @@
-﻿namespace MirrorM.AdapterInterface.Query.Conditions
+﻿using System;
+
+namespace MirrorM.AdapterInterface.Query.Conditions
 {
     public class ExpressionBinary : ExpressionBase
     {
@@ -35,6 +37,11 @@
                 return eb.Left == Left && eb.Right == Right && eb.Op == Op;
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Op, Left, Right);
         }
     }
 }

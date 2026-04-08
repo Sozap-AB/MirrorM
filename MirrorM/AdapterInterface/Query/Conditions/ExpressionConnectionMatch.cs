@@ -38,5 +38,10 @@ namespace MirrorM.AdapterInterface.Query.Conditions
 
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(ConnectionTable, OwnerKey, ForeignKey, Value);
+        }
     }
 }
