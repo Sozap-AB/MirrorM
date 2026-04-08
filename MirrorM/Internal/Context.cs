@@ -521,6 +521,9 @@ namespace MirrorM.Internal
 
         public void Add(Entity entity)
         {
+            if (EntityStorage.ContainsKey(entity.Id))
+                throw new InvalidOperationException($"Entity with id {entity.Id} already exists in storage");
+
             EntityStorage[entity.Id] = entity;
         }
 

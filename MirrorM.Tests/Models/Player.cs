@@ -37,6 +37,12 @@ namespace MirrorM.Tests.Models
 
         public string Rank => ((RankCalculator)SuperContext!).CalculateRank(Level);
 
+        public Player(IContext db, Guid id, string name, int level) : base(db, id)
+        {
+            Name = name;
+            Level = level;
+        }
+
         public Player(IContext db, string name, int level) : base(db)
         {
             Name = name;
