@@ -172,7 +172,8 @@ namespace MirrorM.Internal
 
         private IEnumerable<T> GetFilteredAndSortedEntities<T>(IEntityQuerySchema constraints) where T : Entity
         {
-            IEnumerable<T> result = ConnectionStorage
+            IEnumerable<T> result = EntityStorage
+                .Select(x => x.Value)
                 .OfType<T>()
                 .Where(e => FilterEntity(e, constraints.Conditions));
 
