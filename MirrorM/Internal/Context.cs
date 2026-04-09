@@ -118,6 +118,16 @@ namespace MirrorM.Internal
             // 2.2 If query contains Skip or Take, we're taking returned results and filtering every item of it
             // 3. Execute conditions & sorting against storage
 
+            // trying the easy way to handle query
+
+            if (TryGetFastTrackResult<T>(builder, out var ftr))
+            {
+                foreach (var item in ftr)
+                    yield return item;
+
+                yield break;
+            }
+
             // calculating strategy and working with cache
 
             var strategy = CalculateGetQueryStrategy(builder);
@@ -167,6 +177,53 @@ namespace MirrorM.Internal
 
             foreach (var item in GetFilteredAndSortedEntities<T>(builder))
                 yield return item;
+        }
+
+        private bool TryGetFastTrackResult<T>(IEntityQuerySchema schema, out IEnumerable<T> result) where T : Entity
+        {
+            // currently fast track only works for single entity queried by id
+
+            result = Array.Empty<T>();
+
+            if (schema.TakeCount.HasValue && schema.TakeCount.Value != 1)
+                return false;
+
+            if (schema.SkipCount > 0)
+                return false;
+
+            if (schema.Conditions.Count() != 1)
+                return false;
+
+            if (!(schema.Conditions.First() is ExpressionBinary eb))
+                return false;
+
+            if (eb.Op != ExpressionBinary.Operation.Equal)
+                return false;
+
+            if (eb.Left is ExpressionField lef)
+            {
+                if (lef.FieldName == Entity.FIELD_ID
+                && eb.Right is ExpressionConst rec
+                && rec.Value is Guid rid
+                && EntityStorage.TryGetValue(rid, out var lres))
+                {
+                    result = new[] { (T)lres };
+
+                    return true;
+                }
+            }
+            else if (eb.Right is ExpressionField rexpf
+                && rexpf.FieldName == Entity.FIELD_ID
+                && eb.Left is ExpressionConst lec
+                && lec.Value is Guid lid
+                && EntityStorage.TryGetValue(lid, out var rres))
+            {
+                result = new[] { (T)rres };
+
+                return true;
+            }
+
+            return false;
         }
 
         private static GetQueryStrategy CalculateGetQueryStrategy(IEntityQuerySchema schema)
