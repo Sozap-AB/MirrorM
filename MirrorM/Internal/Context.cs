@@ -25,7 +25,7 @@ namespace MirrorM.Internal
     {
         private enum GetQueryStrategy
         {
-            Default, // load to storage and filter + sort against the storage
+            Default, // load to storage and (filter + sort) against the storage
             UseDbSelection, // load to storage, filter loaded and return
         }
 
@@ -118,16 +118,23 @@ namespace MirrorM.Internal
             // 2.2 If query contains Skip or Take, we're taking returned results and filtering every item of it
             // 3. Execute conditions & sorting against storage
 
+            // calculating strategy and working with cache
+
             var strategy = CalculateGetQueryStrategy(builder);
 
-            var currentCacheItem = new QueryCacheItem(builder.Conditions);
-
-            if (ExecutedQueriesCache.Any(ci => ci.IsCoveringCacheItem(currentCacheItem)))
+            if (IsQueryCachable(builder))
             {
-                foreach (var item in GetFilteredAndSortedEntities<T>(builder))
-                    yield return item;
+                var currentCacheItem = new QueryCacheItem(builder.Conditions);
 
-                yield break;
+                if (ExecutedQueriesCache.Any(ci => ci.IsCoveringCacheItem(currentCacheItem)))
+                {
+                    foreach (var item in GetFilteredAndSortedEntities<T>(builder))
+                        yield return item;
+
+                    yield break;
+                }
+
+                ExecutedQueriesCache.Add(currentCacheItem);
             }
 
             // executing SQL and saving to storage
@@ -139,11 +146,11 @@ namespace MirrorM.Internal
                 rec => GetOrSaveEntitiesToStorage(rec, builder)
             ))
             {
-                if (entity is T)
+                if (entity is T) // it's important, cause item might be loaded relation
                 {
                     SaveConnectionsToStorage(entity, connectionConditions);
 
-                    if (strategy == GetQueryStrategy.UseDbSelection) // it's important, cause item might be loaded relation
+                    if (strategy == GetQueryStrategy.UseDbSelection)
                     {
                         if (entity.IsUpdated && !FilterEntity(entity, builder.Conditions))
                             continue;
@@ -162,12 +169,25 @@ namespace MirrorM.Internal
                 yield return item;
         }
 
-        private static GetQueryStrategy CalculateGetQueryStrategy(IEntityQuerySchema constraints)
+        private static GetQueryStrategy CalculateGetQueryStrategy(IEntityQuerySchema schema)
         {
-            if (constraints.SkipCount > 0 || constraints.TakeCount.HasValue)
+            if (schema.SkipCount > 0 || schema.TakeCount.HasValue)
                 return GetQueryStrategy.UseDbSelection;
 
             return GetQueryStrategy.Default;
+        }
+
+        private static bool IsQueryCachable(IEntityQuerySchema schema)
+        {
+            if (schema.SkipCount > 0)
+                return false;
+
+            //TODO: we can probably cache queries with TakeCount,
+            //but that requires additional research
+            if (schema.TakeCount.HasValue)
+                return false;
+
+            return true;
         }
 
         private IEnumerable<T> GetFilteredAndSortedEntities<T>(IEntityQuerySchema constraints) where T : Entity

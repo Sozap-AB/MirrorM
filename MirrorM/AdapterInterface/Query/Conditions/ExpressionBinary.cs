@@ -34,7 +34,7 @@ namespace MirrorM.AdapterInterface.Query.Conditions
         public override bool Equals(object obj)
         {
             if (obj is ExpressionBinary eb)
-                return eb.Left == Left && eb.Right == Right && eb.Op == Op;
+                return eb.Left.Equals(Left) && eb.Right.Equals(Right) && eb.Op == Op;
 
             return false;
         }
