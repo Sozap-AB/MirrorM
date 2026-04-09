@@ -7,7 +7,7 @@
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
 
     <Version>2.0.1</Version>
-    <VersionSuffix>-rc.2</VersionSuffix>
+    <VersionSuffix>-rc.3</VersionSuffix>
 
     <PackageId>MirrorM.Npgsql</PackageId>
 	<PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseProjectReferences)' != 'true'">
-    <PackageReference Include="MirrorM" Version="2.0.1-rc.1" />
+    <PackageReference Include="MirrorM" Version="2.0.1-rc.3" />
   </ItemGroup>
 
   <ItemGroup>
