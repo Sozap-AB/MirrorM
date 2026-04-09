@@ -1,12 +1,15 @@
 ﻿using MirrorM.Attributes;
+using MirrorM.Common;
 using MirrorM.Relations;
 using MirrorM.Tests.Tools;
 
 namespace MirrorM.Tests.Models
 {
-    [Entity("players")]
+    [Entity(TABLE)]
     public class Player : Entity
     {
+        private const string TABLE = "players";
+
         public const string CONNECTION_KEY = "player_id";
 
         private const string FIELD_NAME = "name";
@@ -51,6 +54,14 @@ namespace MirrorM.Tests.Models
 
         public Player(IContext db, IFields fields) : base(db, fields)
         {
+        }
+
+        public static async Task<IEnumerable<Player>> FindByNamePartialAsync(IContext db, string partialName)
+        {
+            return await db.ExecuteSqlQueryAsync<Player>(
+                $"SELECT m.* FROM {TABLE} m WHERE m.{FIELD_NAME} LIKE @pattern",
+                new SqlParameter("pattern", $"%{partialName}%")
+            ).ToListAsync();
         }
     }
 }

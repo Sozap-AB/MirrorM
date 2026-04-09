@@ -39,6 +39,22 @@ namespace MirrorM.Tests
         }
 
         [Fact]
+        public async Task RawSQLQueryTest()
+        {
+            var playerId = await ExecuteWithDatabaseAndGetAsync(db =>
+            {
+                return Task.FromResult(new Player(db, "player1", 5).Id);
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var result = (await Player.FindByNamePartialAsync(db, "aye")).First();
+
+                Assert.Equal(playerId, result.Id);
+            });
+        }
+
+        [Fact]
         public async Task OrderBySkipAndTakeTest()
         {
             await ExecuteWithDatabaseAsync(db =>
