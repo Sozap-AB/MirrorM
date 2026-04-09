@@ -375,31 +375,30 @@ namespace MirrorM.Internal
 
         private T GetOrSaveEntityToStorage<T>(IDataReader record) where T : Entity
         {
-            T SaveObjectToStorage(T obj)
-            {
-                if (!EntityStorage.ContainsKey(obj.Id))
-                {
-                    EntityStorage[obj.Id] = obj;
-                }
-
-                //TODO: update/merge fields if object exists
-
-                return obj;
-            }
+            var id = record.GetGuid(0);
 
             Dictionary<string, object?> collection = new Dictionary<string, object?>() {
-                { record.GetName(0), record.GetGuid(0) }
+                { record.GetName(0), id }
             };
 
-            for (int i = 0; i < record.FieldCount; i++)
+            for (int i = 1; i < record.FieldCount; i++)
             {
                 collection.Add(record.GetName(i), ReadValue(record, i));
             }
 
-            return SaveObjectToStorage(CreateEntity<T>(
-                typeof(T),
-                new FieldCollection(collection)
-            ));
+            if (EntityStorage.TryGetValue(id, out var existingEntity))
+            {
+                //TODO: update/merge fields if object exists
+
+                return (T)existingEntity;
+            }
+            else
+            {
+                return CreateEntity<T>(
+                    typeof(T),
+                    new FieldCollection(collection)
+                );
+            }
         }
 
         public void Dispose()
