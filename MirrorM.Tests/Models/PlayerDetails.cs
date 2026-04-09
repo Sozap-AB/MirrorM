@@ -7,8 +7,8 @@ namespace MirrorM.Tests.Models
     [Entity("player_details")]
     public class PlayerDetails : Entity
     {
-        public const string FIELD_PLAYER_ID = "player_id";
-        public const string FIELD_META_DATA = "meta_data";
+        private const string FIELD_PLAYER_ID = "player_id";
+        private const string FIELD_META_DATA = "meta_data";
 
         [Field(FIELD_PLAYER_ID)]
         public Guid PlayerId

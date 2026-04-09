@@ -6,8 +6,8 @@ namespace MirrorM.Tests.Models
     [Entity("player_items")]
     public class PlayerInventoryItem : Entity
     {
-        public const string FIELD_PLAYER_ID = "player_id";
-        public const string FIELD_NAME = "name";
+        private const string FIELD_PLAYER_ID = "player_id";
+        private const string FIELD_NAME = "name";
 
         [Field(FIELD_PLAYER_ID)]
         public Guid PlayerId

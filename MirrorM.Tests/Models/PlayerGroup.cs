@@ -9,7 +9,7 @@ namespace MirrorM.Tests.Models
         public const string CONNECTION_TABLE_PLAYER = "player_group_player";
         public const string CONNECTION_KEY = "group_id";
 
-        public const string FIELD_NAME = "name";
+        private const string FIELD_NAME = "name";
 
         [Field(FIELD_NAME)]
         public string Name

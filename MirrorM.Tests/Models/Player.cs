@@ -9,8 +9,8 @@ namespace MirrorM.Tests.Models
     {
         public const string CONNECTION_KEY = "player_id";
 
-        public const string FIELD_NAME = "name";
-        public const string FIELD_LEVEL = "level";
+        private const string FIELD_NAME = "name";
+        private const string FIELD_LEVEL = "level";
 
         [Field(FIELD_NAME)]
         public string Name

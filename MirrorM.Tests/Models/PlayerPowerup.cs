@@ -6,8 +6,7 @@ namespace MirrorM.Tests.Models
     [Entity("player_powerups", subTypes: [typeof(PlayerPowerupHealthBoost), typeof(PlayerPowerupEnergyBoost)])]
     public abstract class PlayerPowerup : Entity
     {
-        public const string FIELD_USER_ID = "player_id";
-        public const string FIELD_POWERUP_DATA = "data";
+        private const string FIELD_USER_ID = "player_id";
 
         [Field(FIELD_USER_ID)]
         public Guid PlayerId
