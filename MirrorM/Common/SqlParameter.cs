@@ -10,5 +10,9 @@
             Name = name;
             Value = value;
         }
+
+        public SqlParameter(string name, object value) : this(name, new SqlParameterValue(value))
+        {
+        }
     }
 }
