@@ -71,7 +71,6 @@ namespace MirrorM.Tests
         [Fact]
         public async Task ManyToManySimpleRelationTest()
         {
-
             Guid user1Id = Guid.Empty;
             Guid user2Id = Guid.Empty;
             Guid group1Id = Guid.Empty;
@@ -97,7 +96,7 @@ namespace MirrorM.Tests
                 group2Id = group2.Id;
 
                 group1.Players.AttachTo(player1);
-                group1.Players.AttachTo(player2);
+                player2.Groups.AttachTo(group1);
                 group2.Players.AttachTo(player1);
 
                 return Task.CompletedTask;
@@ -117,6 +116,28 @@ namespace MirrorM.Tests
                     .SetEquals(await group2.Players.Query().ToListAsync()));
 
                 Assert.True(new HashSet<PlayerGroup>([group1, group2])
+                    .SetEquals(await player1.Groups.Query().ToListAsync()));
+
+                Assert.True(new HashSet<PlayerGroup>([group1])
+                    .SetEquals(await player2.Groups.Query().ToListAsync()));
+
+                player1.Groups.DetachFrom(group2);
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var player1 = await db.GetByIdAsync<Player>(user1Id);
+                var player2 = await db.GetByIdAsync<Player>(user2Id);
+                var group1 = await db.GetByIdAsync<PlayerGroup>(group1Id);
+                var group2 = await db.GetByIdAsync<PlayerGroup>(group2Id);
+
+                Assert.True(new HashSet<Player>([player1, player2])
+                    .SetEquals(await group1.Players.Query().ToListAsync()));
+
+                Assert.True(new HashSet<Player>([])
+                    .SetEquals(await group2.Players.Query().ToListAsync()));
+
+                Assert.True(new HashSet<PlayerGroup>([group1])
                     .SetEquals(await player1.Groups.Query().ToListAsync()));
 
                 Assert.True(new HashSet<PlayerGroup>([group1])
