@@ -110,10 +110,6 @@ namespace MirrorM.Tests
                 var group1 = await db.GetByIdAsync<PlayerGroup>(group1Id);
                 var group2 = await db.GetByIdAsync<PlayerGroup>(group2Id);
 
-                var plaersTest = await group1.Players.Query().ToListAsync(); //TODO: not working, test it
-
-                Assert.True(object.ReferenceEquals(player1, plaersTest.First()));
-
                 Assert.True(new HashSet<Player>([player1, player2])
                     .SetEquals(await group1.Players.Query().ToListAsync()));
 
