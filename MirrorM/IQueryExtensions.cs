@@ -38,7 +38,7 @@ namespace MirrorM
             return (await query.ToListAsync()).ToArray();
         }
 
-        public static async Task<T[]> ToListAsync<T>(this IQuery<T> query) where T : Entity
+        public static async Task<IList<T>> ToListAsync<T>(this IQuery<T> query) where T : Entity
         {
             var result = new List<T>(); //TODO: use information from query to preallocate the list
 
@@ -47,7 +47,7 @@ namespace MirrorM
                 result.Add(item);
             }
 
-            return result.ToArray();
+            return result;
         }
     }
 }
