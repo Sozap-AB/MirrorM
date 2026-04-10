@@ -23,7 +23,7 @@ namespace MirrorM.Tests.Models
             set => SetValue(FIELD_NAME, value);
         }
 
-        public IRelationFieldToId<Player> User => GetRelationFieldToId<PlayerInventoryItem, Player>(x => x.PlayerId);
+        public IRelationFieldToId<Player> Player => GetRelationFieldToId<PlayerInventoryItem, Player>(x => x.PlayerId);
 
         public PlayerInventoryItem(IContext db, string name) : base(db)
         {

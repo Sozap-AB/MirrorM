@@ -29,7 +29,7 @@ namespace MirrorM.Tests
                 var player = await db.GetByIdAsync<Player>(playerId);
                 var details = await player.PlayerDetails.GetAsync();
                 Assert.Equal(playerId, details.PlayerId);
-                Assert.Equal(playerDetailId, (await player.PlayerDetails.GetAsync()).Id);
+                Assert.Equal(playerDetailId, details.Id);
             });
         }
 
@@ -44,21 +44,27 @@ namespace MirrorM.Tests
             await ExecuteWithDatabaseAsync(async db =>
             {
                 var player = await db.GetByIdAsync<Player>(playerId);
-                Assert.False(await player.Groups.Query().AnyAsync());
-            });
-
-            var playerDetailId = await ExecuteWithDatabaseAndGetAsync(async db =>
-            {
-                var player = await db.GetByIdAsync<Player>(playerId);
-                return new PlayerDetails(db, player).Id;
+                Assert.False(await player.PlayerItems.Query().AnyAsync());
             });
 
             await ExecuteWithDatabaseAsync(async db =>
             {
                 var player = await db.GetByIdAsync<Player>(playerId);
-                var details = await player.PlayerDetails.GetAsync();
-                Assert.Equal(playerId, details.PlayerId);
-                Assert.Equal(playerDetailId, (await player.PlayerDetails.GetAsync()).Id);
+                var inventoryItem1 = new PlayerInventoryItem(db, "item1");
+                var inventoryItem2 = new PlayerInventoryItem(db, "item2");
+
+                inventoryItem1.Player.Attach(player);
+                player.PlayerItems.AttachTo(inventoryItem2);
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var player = await db.GetByIdAsync<Player>(playerId);
+
+                var items = await player.PlayerItems.Query().ToArrayAsync();
+
+                Assert.Equal(2, items.Length);
+                Assert.Equal(["item1", "item2"], items.Select(i => i.Name).OrderBy(x => x));
             });
         }
 
