@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS player_group_player (
 CREATE TABLE IF NOT EXISTS player_items (
     id UUID PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    player_id UUID NOT NULL,
+    player_id UUID NULL,
     _version BIGINT NOT NULL,
     _updated_at TIMESTAMP NOT NULL,
     _created_at TIMESTAMP NOT NULL

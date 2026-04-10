@@ -83,6 +83,18 @@ namespace MirrorM.Tests
 
                 Assert.Equal(2, items.Count());
                 Assert.Equal(["item1", "item2"], items.Select(i => i.Name).OrderBy(x => x));
+
+                player.PlayerItems.DetachFrom(items.First(x => x.Name == "item1"));
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var player = await db.GetByIdAsync<Player>(playerId);
+
+                var items = await player.PlayerItems.Query().ToListAsync();
+
+                Assert.Single(items);
+                Assert.Equal(["item2"], items.Select(i => i.Name).OrderBy(x => x));
             });
         }
 
