@@ -18,12 +18,12 @@ namespace MirrorM.Internal.Relations
             ForeignConnectionKey = foreignConnectionKey;
         }
 
-        public void AttachTo(T entity)
+        public void Attach(T entity)
         {
             Owner.ContextInternal.AddConnection(ConnectionTable, OwnerConnectionKey, Owner.Id, ForeignConnectionKey, entity.Id);
         }
 
-        public void DetachFrom(T entity)
+        public void Detach(T entity)
         {
             Owner.ContextInternal.RemoveConnection(ConnectionTable, OwnerConnectionKey, Owner.Id, ForeignConnectionKey, entity.Id);
         }

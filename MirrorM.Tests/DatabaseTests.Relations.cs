@@ -29,8 +29,8 @@ namespace MirrorM.Tests
                 var player2 = await db.GetByIdAsync<Player>(player2Id);
                 var details2 = new PlayerDetails(db);
 
-                player1.PlayerDetails.AttachTo(details1);
-                details2.Player.Attach(player2);
+                player1.PlayerDetails.Attach(details1);
+                details2.Player.AttachTo(player2);
 
                 return (details1.Id, details2.Id);
             });
@@ -71,8 +71,8 @@ namespace MirrorM.Tests
                 var inventoryItem1 = new PlayerInventoryItem(db, "item1");
                 var inventoryItem2 = new PlayerInventoryItem(db, "item2");
 
-                inventoryItem1.Player.Attach(player);
-                player.PlayerItems.AttachTo(inventoryItem2);
+                inventoryItem1.Player.AttachTo(player);
+                player.PlayerItems.Attach(inventoryItem2);
             });
 
             await ExecuteWithDatabaseAsync(async db =>
@@ -84,7 +84,7 @@ namespace MirrorM.Tests
                 Assert.Equal(2, items.Count());
                 Assert.Equal(["item1", "item2"], items.Select(i => i.Name).OrderBy(x => x));
 
-                player.PlayerItems.DetachFrom(items.First(x => x.Name == "item1"));
+                player.PlayerItems.Detach(items.First(x => x.Name == "item1"));
             });
 
             await ExecuteWithDatabaseAsync(async db =>
@@ -125,9 +125,9 @@ namespace MirrorM.Tests
                 group1Id = group1.Id;
                 group2Id = group2.Id;
 
-                group1.Players.AttachTo(player1);
-                player2.Groups.AttachTo(group1);
-                group2.Players.AttachTo(player1);
+                group1.Players.Attach(player1);
+                player2.Groups.Attach(group1);
+                group2.Players.Attach(player1);
 
                 return Task.CompletedTask;
             });
@@ -151,7 +151,7 @@ namespace MirrorM.Tests
                 Assert.True(new HashSet<PlayerGroup>([group1])
                     .SetEquals(await player2.Groups.Query().ToListAsync()));
 
-                player1.Groups.DetachFrom(group2);
+                player1.Groups.Detach(group2);
             });
 
             await ExecuteWithDatabaseAsync(async db =>

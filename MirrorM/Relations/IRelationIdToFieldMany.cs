@@ -4,7 +4,7 @@
     {
         IQuery<T> Query();
 
-        void AttachTo(T entity);
-        void DetachFrom(T entity);
+        void Attach(T entity);
+        void Detach(T entity);
     }
 }

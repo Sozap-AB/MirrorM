@@ -28,7 +28,7 @@ namespace MirrorM.Tests.Models
 
         public PlayerDetails(IContext db, Player player) : this(db)
         {
-            Player.Attach(player);
+            this.Player.AttachTo(player);
         }
 
         public PlayerDetails(IContext db) : base(db)

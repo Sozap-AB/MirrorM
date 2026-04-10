@@ -15,7 +15,7 @@ namespace MirrorM.Internal.Relations
             ForeignKey = foreignKey;
         }
 
-        public void Attach(T entity)
+        public void AttachTo(T entity)
         {
             Owner.SetValue(ForeignKey, entity.Id);
         }

@@ -6,6 +6,6 @@ namespace MirrorM.Relations
     {
         Task<T> GetAsync();
         Task<T?> GetOptionalAsync();
-        void AttachTo(T entity);
+        void Attach(T entity);
     }
 }

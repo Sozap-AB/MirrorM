@@ -19,7 +19,7 @@ namespace MirrorM.Internal.Relations
             ForeignKey = ReflectionTools.GetFieldNameFromSelector(fieldProvider);
         }
 
-        public void AttachTo(T entity)
+        public void Attach(T entity)
         {
             entity.SetValue(ForeignKey, Owner.Id);
         }
