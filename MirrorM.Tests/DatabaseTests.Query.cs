@@ -72,9 +72,9 @@ namespace MirrorM.Tests
             await ExecuteWithDatabaseAsync(async db => Assert.Equal("player5", (await db.Query<Player>().OrderByDescending(x => x.Level).FirstAsync()).Name));
             await ExecuteWithDatabaseAsync(async db =>
             {
-                var result = await db.Query<Player>().OrderByDescending(x => x.Level).Skip(2).Take(2).ToArrayAsync();
+                var result = await db.Query<Player>().OrderByDescending(x => x.Level).Skip(2).Take(2).ToListAsync();
 
-                Assert.Equal(2, result.Length);
+                Assert.Equal(2, result.Count());
                 Assert.Equal("player3", result.First().Name);
                 Assert.Equal("player2", result.Last().Name);
             });

@@ -61,9 +61,9 @@ namespace MirrorM.Tests
             {
                 var player = await db.GetByIdAsync<Player>(playerId);
 
-                var items = await player.PlayerItems.Query().ToArrayAsync();
+                var items = await player.PlayerItems.Query().ToListAsync();
 
-                Assert.Equal(2, items.Length);
+                Assert.Equal(2, items.Count());
                 Assert.Equal(["item1", "item2"], items.Select(i => i.Name).OrderBy(x => x));
             });
         }
@@ -110,21 +110,21 @@ namespace MirrorM.Tests
                 var group1 = await db.GetByIdAsync<PlayerGroup>(group1Id);
                 var group2 = await db.GetByIdAsync<PlayerGroup>(group2Id);
 
-                var plaersTest = await group1.Players.Query().ToArrayAsync(); //TODO: not working, test it
+                var plaersTest = await group1.Players.Query().ToListAsync(); //TODO: not working, test it
 
                 Assert.True(object.ReferenceEquals(player1, plaersTest.First()));
 
                 Assert.True(new HashSet<Player>([player1, player2])
-                    .SetEquals(await group1.Players.Query().ToArrayAsync()));
+                    .SetEquals(await group1.Players.Query().ToListAsync()));
 
                 Assert.True(new HashSet<Player>([player1])
-                    .SetEquals(await group2.Players.Query().ToArrayAsync()));
+                    .SetEquals(await group2.Players.Query().ToListAsync()));
 
                 Assert.True(new HashSet<PlayerGroup>([group1, group2])
-                    .SetEquals(await player1.Groups.Query().ToArrayAsync()));
+                    .SetEquals(await player1.Groups.Query().ToListAsync()));
 
                 Assert.True(new HashSet<PlayerGroup>([group1])
-                    .SetEquals(await player2.Groups.Query().ToArrayAsync()));
+                    .SetEquals(await player2.Groups.Query().ToListAsync()));
             });
         }
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -31,11 +30,6 @@ namespace MirrorM
         public static async Task<T?> FirstOrDefaultAsync<T>(this IQuery<T> query, Expression<Func<T, bool>> predicate) where T : Entity
         {
             return await query.Where(predicate).FirstOrDefaultAsync();
-        }
-
-        public static async Task<T[]> ToArrayAsync<T>(this IQuery<T> query) where T : Entity
-        {
-            return (await query.ToListAsync()).ToArray();
         }
 
         public static async Task<IList<T>> ToListAsync<T>(this IQuery<T> query) where T : Entity
