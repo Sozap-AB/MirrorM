@@ -7,7 +7,7 @@
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
       
     <Version>2.0.1</Version>
-    <VersionSuffix>-rc.3</VersionSuffix>
+    <VersionSuffix>-rc.4</VersionSuffix>
 
     <PackageId>MirrorM</PackageId>
 	<PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
