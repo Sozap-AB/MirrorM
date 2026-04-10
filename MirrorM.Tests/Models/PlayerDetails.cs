@@ -26,9 +26,13 @@ namespace MirrorM.Tests.Models
 
         public IRelationFieldToId<Player> Player => GetRelationFieldToId<PlayerDetails, Player>(x => x.PlayerId);
 
-        public PlayerDetails(IContext db, Player player) : base(db)
+        public PlayerDetails(IContext db, Player player) : this(db)
         {
             Player.Attach(player);
+        }
+
+        public PlayerDetails(IContext db) : base(db)
+        {
             MetaData = new JsonObject();
         }
 

@@ -7,29 +7,47 @@ namespace MirrorM.Tests
         [Fact]
         public async Task OneToOneSimpleRelationTest()
         {
-            var playerId = await ExecuteWithDatabaseAndGetAsync(db =>
+            (var player1Id, var player2Id) = await ExecuteWithDatabaseAndGetAsync(db =>
             {
-                return Task.FromResult(new Player(db, "player1", 5).Id);
+                return Task.FromResult((
+                    new Player(db, "player1", 5).Id,
+                    new Player(db, "player2", 5).Id
+                ));
             });
 
             await ExecuteWithDatabaseAsync(async db =>
             {
-                var player = await db.GetByIdAsync<Player>(playerId);
+                var player = await db.GetByIdAsync<Player>(player1Id);
                 Assert.Null(await player.PlayerDetails.GetOptionalAsync());
             });
 
-            var playerDetailId = await ExecuteWithDatabaseAndGetAsync(async db =>
+            (var playerDetail1Id, var playerDetail2Id) = await ExecuteWithDatabaseAndGetAsync(async db =>
             {
-                var player = await db.GetByIdAsync<Player>(playerId);
-                return new PlayerDetails(db, player).Id;
+                var player1 = await db.GetByIdAsync<Player>(player1Id);
+                var details1 = new PlayerDetails(db);
+
+                var player2 = await db.GetByIdAsync<Player>(player2Id);
+                var details2 = new PlayerDetails(db);
+
+                player1.PlayerDetails.AttachTo(details1);
+                details2.Player.Attach(player2);
+
+                return (details1.Id, details2.Id);
             });
 
             await ExecuteWithDatabaseAsync(async db =>
             {
-                var player = await db.GetByIdAsync<Player>(playerId);
-                var details = await player.PlayerDetails.GetAsync();
-                Assert.Equal(playerId, details.PlayerId);
-                Assert.Equal(playerDetailId, details.Id);
+                var player1 = await db.GetByIdAsync<Player>(player1Id);
+                var details1 = await player1.PlayerDetails.GetAsync();
+
+                Assert.Equal(player1Id, details1.PlayerId);
+                Assert.Equal(playerDetail1Id, details1.Id);
+
+                var player2 = await db.GetByIdAsync<Player>(player2Id);
+                var details2 = await player2.PlayerDetails.GetAsync();
+
+                Assert.Equal(player2Id, details2.PlayerId);
+                Assert.Equal(playerDetail2Id, details2.Id);
             });
         }
 
