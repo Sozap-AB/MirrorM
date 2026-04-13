@@ -231,6 +231,9 @@ namespace MirrorM.Internal
             if (schema.SkipCount > 0 || schema.TakeCount.HasValue)
                 return GetQueryStrategy.UseDbSelection;
 
+            if (schema.Conditions.Any(x => x is ExpressionRawSql))
+                return GetQueryStrategy.UseDbSelection;
+
             return GetQueryStrategy.Default;
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MirrorM.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace MirrorM
     public interface IQuery<T> where T : Entity
     {
         IQuery<T> Where(Expression<Func<T, bool>> predicate);
-        IQuery<T> WhereRawSQL(string sql); // Not implemented
+        IQuery<T> WhereRawSql(string sql, params SqlParameter[] parameters);
 
         IQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> fieldSelector);
         IQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> fieldSelector);

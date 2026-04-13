@@ -1,5 +1,6 @@
 ﻿using MirrorM.AdapterInterface.Query;
 using MirrorM.AdapterInterface.Query.Conditions;
+using MirrorM.Common;
 using MirrorM.Internal.Common;
 using System;
 using System.Collections.Generic;
@@ -47,9 +48,11 @@ namespace MirrorM.Internal.Query.Builder
             return this;
         }
 
-        public IQuery<T> WhereRawSQL(string sql)
+        public IQuery<T> WhereRawSql(string sql, params SqlParameter[] parameters)
         {
-            throw new NotImplementedException();
+            ConditionsWritable.Add(new ExpressionRawSql(sql, parameters));
+
+            return this;
         }
 
         public IQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> fieldSelector)

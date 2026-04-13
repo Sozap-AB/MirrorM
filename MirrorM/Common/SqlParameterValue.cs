@@ -18,5 +18,18 @@ namespace MirrorM.Common
         public SqlParameterValue(object value) : this(value, null)
         {
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SqlParameterValue spv)
+                return Value.Equals(spv.Value) && SqlType.Equals(spv.SqlType);
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Value, SqlType);
+        }
     }
 }

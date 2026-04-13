@@ -261,6 +261,17 @@ namespace MirrorM.Npgsql.Internal
                         $"c.{expressionConnectionMatch.OwnerKey} = m.id AND " +
                         $"c.{expressionConnectionMatch.ForeignKey} = :{parametersCollection.AddParameter(new SqlParameterValue(expressionConnectionMatch.Value))}" +
                     ")";
+                case ExpressionRawSql expressionRawSql:
+                    var sql = expressionRawSql.Sql;
+
+                    expressionRawSql.Parameters.ForEach(p =>
+                    {
+                        sql = sql.Replace($":{p.Name}", $":{parametersCollection.AddParameter(p.Value)}");
+
+                        parametersCollection.AddParameter(p.Value);
+                    });
+
+                    return $"({sql})";
                 default:
                     throw new NotSupportedException($"Unsupported expression type: {exp}");
             }

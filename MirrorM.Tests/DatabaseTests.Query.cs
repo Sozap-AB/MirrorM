@@ -1,4 +1,5 @@
-﻿using MirrorM.Tests.Models;
+﻿using MirrorM.Common;
+using MirrorM.Tests.Models;
 
 namespace MirrorM.Tests
 {
@@ -39,7 +40,7 @@ namespace MirrorM.Tests
         }
 
         [Fact]
-        public async Task RawSQLQueryTest()
+        public async Task RawSqlQueryTest()
         {
             var playerId = await ExecuteWithDatabaseAndGetAsync(db =>
             {
@@ -51,6 +52,29 @@ namespace MirrorM.Tests
                 var result = (await Player.FindByNamePartialAsync(db, "aye")).First();
 
                 Assert.Equal(playerId, result.Id);
+            });
+        }
+
+        [Fact]
+        public async Task WhereRawSqlQueryTest()
+        {
+            var player1Id = await ExecuteWithDatabaseAndGetAsync(db =>
+            {
+                var player1 = new Player(db, "player1", 5);
+                _ = new Player(db, "player2", 6);
+
+                return Task.FromResult(player1.Id);
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var result = await db.Query<Player>()
+                    .Where(x => x.Level == 5)
+                    .WhereRawSql("name = :name", new SqlParameter("name", "player1"))
+                    .ToListAsync();
+
+                Assert.Single(result);
+                Assert.Equal(player1Id, result.First().Id);
             });
         }
 
