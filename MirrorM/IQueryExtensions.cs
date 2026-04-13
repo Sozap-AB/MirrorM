@@ -27,6 +27,11 @@ namespace MirrorM
             return null;
         }
 
+        public static Task<bool> AnyAsync<T>(this IQuery<T> query, Expression<Func<T, bool>> predicate) where T : Entity
+        {
+            return query.Where(predicate).AnyAsync();
+        }
+
         public static async Task<T?> FirstOrDefaultAsync<T>(this IQuery<T> query, Expression<Func<T, bool>> predicate) where T : Entity
         {
             return await query.Where(predicate).FirstOrDefaultAsync();
