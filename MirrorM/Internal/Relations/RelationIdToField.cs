@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace MirrorM.Internal.Relations
 {
-    internal class RelationIdToField<T> : IRelationIdToField<T>, IRelationIdToFieldInternal where T : Entity
+    internal class RelationIdToField<T> : IRelationIdToField<T>, IRelationIdToFieldInternal where T : EntityBase
     {
-        private Entity Owner { get; }
+        private EntityBase Owner { get; }
         private Expression<Func<T, Guid>> FieldProvider { get; } //TODO: check if needed
         public string ForeignKey { get; }
 
-        public RelationIdToField(Entity owner, Expression<Func<T, Guid>> fieldProvider)
+        public RelationIdToField(EntityBase owner, Expression<Func<T, Guid>> fieldProvider)
         {
             Owner = owner;
             FieldProvider = fieldProvider;

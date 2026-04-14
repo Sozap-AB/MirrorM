@@ -32,7 +32,7 @@ namespace MirrorM.Internal
         private sealed class Memory
         {
             public HashSet<QueryCacheItem> ExecutedQueriesCache { get; } = new HashSet<QueryCacheItem>();
-            public IDictionary<Guid, Entity> EntityStorage { get; } = new Dictionary<Guid, Entity>();
+            public IDictionary<Guid, EntityBase> EntityStorage { get; } = new Dictionary<Guid, EntityBase>();
             public IDictionary<string, ConnectionTableStorage> ConnectionStorage { get; } = new Dictionary<string, ConnectionTableStorage>();
         }
 
@@ -42,7 +42,7 @@ namespace MirrorM.Internal
         private Memory ContextMemory { get; set; }
 
         private HashSet<QueryCacheItem> ExecutedQueriesCache => ContextMemory.ExecutedQueriesCache;
-        private IDictionary<Guid, Entity> EntityStorage => ContextMemory.EntityStorage;
+        private IDictionary<Guid, EntityBase> EntityStorage => ContextMemory.EntityStorage;
         private IDictionary<string, ConnectionTableStorage> ConnectionStorage => ContextMemory.ConnectionStorage;
 
         internal ISuperContext? SuperContext { get; private set; }
@@ -70,45 +70,45 @@ namespace MirrorM.Internal
             DatabaseConnection.SetSqlInterceptor(sqlInterceptor);
         }
 
-        public IQuery<T> Query<T>() where T : Entity
+        public IQuery<T> Query<T>() where T : EntityBase
         {
             return new QueryBuilder<T>(this);
         }
 
-        public Task<R> ExecuteSumQueryAsync<T, R>(QueryBuilder<T> builder) where T : Entity
+        public Task<R> ExecuteSumQueryAsync<T, R>(QueryBuilder<T> builder) where T : EntityBase
         {
             //TODO: we should take uncommitted changes into account
 
             return DatabaseConnection.ExecuteSumAsync<R>(builder);
         }
 
-        public Task<R?> ExecuteMaxQueryAsync<T, R>(QueryBuilder<T> builder) where T : Entity where R : struct
+        public Task<R?> ExecuteMaxQueryAsync<T, R>(QueryBuilder<T> builder) where T : EntityBase where R : struct
         {
             //TODO: we should take uncommitted changes into account
 
             return DatabaseConnection.ExecuteMaxAsync<R>(builder);
         }
 
-        public Task<int> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : Entity
+        public Task<int> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase
         {
             //TODO: we should take uncommitted changes into account
 
             return DatabaseConnection.ExecuteCountAsync(builder);
         }
 
-        public Task<bool> ExecuteExistsQueryAsync<T>(QueryBuilder<T> builder) where T : Entity
+        public Task<bool> ExecuteExistsQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase
         {
             //TODO: we should take uncommitted changes into account
 
             return DatabaseConnection.ExecuteExistsAsync(builder);
         }
 
-        public IAsyncEnumerable<T> ExecuteSqlQueryAsync<T>(string sql, params SqlParameter[] parameters) where T : Entity
+        public IAsyncEnumerable<T> ExecuteSqlQueryAsync<T>(string sql, params SqlParameter[] parameters) where T : EntityBase
         {
             return DatabaseConnection.ExecuteRawSelectAsync(sql, parameters, rec => GetOrSaveEntityToStorage<T>(rec));
         }
 
-        public async IAsyncEnumerable<T> ExecuteGetQueryAsync<T>(QueryBuilder<T> builder) where T : Entity
+        public async IAsyncEnumerable<T> ExecuteGetQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase
         {
             // Execution plan:
 
@@ -179,7 +179,7 @@ namespace MirrorM.Internal
                 yield return item;
         }
 
-        private bool TryGetFastTrackResult<T>(IEntityQuerySchema schema, out IEnumerable<T> result) where T : Entity
+        private bool TryGetFastTrackResult<T>(IEntityQuerySchema schema, out IEnumerable<T> result) where T : EntityBase
         {
             // currently fast track only works for single entity queried by id
 
@@ -202,7 +202,7 @@ namespace MirrorM.Internal
 
             if (eb.Left is ExpressionField lef)
             {
-                if (lef.FieldName == Entity.FIELD_ID
+                if (lef.FieldName == EntityBase.FIELD_ID
                 && eb.Right is ExpressionConst rec
                 && rec.Value is Guid rid
                 && EntityStorage.TryGetValue(rid, out var lres))
@@ -213,7 +213,7 @@ namespace MirrorM.Internal
                 }
             }
             else if (eb.Right is ExpressionField rexpf
-                && rexpf.FieldName == Entity.FIELD_ID
+                && rexpf.FieldName == EntityBase.FIELD_ID
                 && eb.Left is ExpressionConst lec
                 && lec.Value is Guid lid
                 && EntityStorage.TryGetValue(lid, out var rres))
@@ -250,7 +250,7 @@ namespace MirrorM.Internal
             return true;
         }
 
-        private IEnumerable<T> GetFilteredAndSortedEntities<T>(IEntityQuerySchema constraints) where T : Entity
+        private IEnumerable<T> GetFilteredAndSortedEntities<T>(IEntityQuerySchema constraints) where T : EntityBase
         {
             IEnumerable<T> result = EntityStorage
                 .Select(x => x.Value)
@@ -278,22 +278,22 @@ namespace MirrorM.Internal
             return orderedResult ?? result;
         }
 
-        private bool FilterEntity(Entity entity, IEnumerable<ExpressionBase> conditions)
+        private bool FilterEntity(EntityBase entity, IEnumerable<ExpressionBase> conditions)
         {
             return conditions.All(c => ExpressionEvaluator.EvaluateCondition(entity, c, this));
         }
 
-        private IAsyncEnumerable<Entity> ExecuteSqlAndHandleRecordsAsync(IEntityQuerySchema schema, Func<IDataReader, IEnumerable<Entity>> handler)
+        private IAsyncEnumerable<EntityBase> ExecuteSqlAndHandleRecordsAsync(IEntityQuerySchema schema, Func<IDataReader, IEnumerable<EntityBase>> handler)
         {
             return DatabaseConnection.ExecuteSelectAsync(schema, handler);
         }
 
-        private T CreateEntity<T>(Type t, IFields fields) where T : Entity
+        private T CreateEntity<T>(Type t, IFields fields) where T : EntityBase
         {
             return (T)Activator.CreateInstance(t, this, fields)!;
         }
 
-        private void SaveConnectionsToStorage(Entity entity, IEnumerable<ExpressionConnectionMatch> conditions)
+        private void SaveConnectionsToStorage(EntityBase entity, IEnumerable<ExpressionConnectionMatch> conditions)
         {
             foreach (var condition in conditions)
             {
@@ -302,7 +302,7 @@ namespace MirrorM.Internal
             }
         }
 
-        private IEnumerable<Entity> GetOrSaveEntitiesToStorage(IDataReader record, IEntityQuerySchema query)
+        private IEnumerable<EntityBase> GetOrSaveEntitiesToStorage(IDataReader record, IEntityQuerySchema query)
         {
             Type DetectType(Type defaultType, IReadOnlyDictionary<string, object?> fields)
             {
@@ -310,7 +310,7 @@ namespace MirrorM.Internal
 
                 if (subTypes != null)
                 {
-                    if (fields.TryGetValue(Entity.FIELD_TYPE, out var typeName))
+                    if (fields.TryGetValue(EntityBase.FIELD_TYPE, out var typeName))
                     {
                         return subTypes!.First(x => x.Name == (string)typeName!);
                     }
@@ -348,7 +348,7 @@ namespace MirrorM.Internal
 
                 i++;
 
-                while (i < record.FieldCount && record.GetName(i) != Entity.FIELD_ID)
+                while (i < record.FieldCount && record.GetName(i) != EntityBase.FIELD_ID)
                 {
                     collection?.Add(record.GetName(i), ReadValue(record, i));
 
@@ -365,7 +365,7 @@ namespace MirrorM.Internal
                     }
                     else
                     {
-                        yield return CreateEntity<Entity>(
+                        yield return CreateEntity<EntityBase>(
                             DetectType(entityTypes.ElementAt(typeIndex), collection),
                             new FieldCollection(collection)
                         );
@@ -376,7 +376,7 @@ namespace MirrorM.Internal
             }
         }
 
-        private T GetOrSaveEntityToStorage<T>(IDataReader record) where T : Entity
+        private T GetOrSaveEntityToStorage<T>(IDataReader record) where T : EntityBase
         {
             var id = record.GetGuid(0);
 
@@ -468,7 +468,7 @@ namespace MirrorM.Internal
                 {
                     if (!to.EntityStorage.ContainsKey(item.Key))
                     {
-                        to.EntityStorage[item.Key] = CreateEntity<Entity>(
+                        to.EntityStorage[item.Key] = CreateEntity<EntityBase>(
                             item.Value.GetType(),
                             new FieldCollection((FieldCollection)item.Value.Fields)
                         );
@@ -532,7 +532,7 @@ namespace MirrorM.Internal
                 .Select(item => item.Value);
 
             commands.AddRange(
-                items.Select<Entity, IEntityModificationSchema>(i =>
+                items.Select<EntityBase, IEntityModificationSchema>(i =>
                 {
                     switch (i.EntityState)
                     {
@@ -543,13 +543,13 @@ namespace MirrorM.Internal
                             );
                         case EntityState.Loaded:
                             return new EntityUpdateStatement(i.GetType(), new ExpressionBase[] {
-                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(Entity.FIELD_ID), new ExpressionConst(i.Id)),
-                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(Entity.FIELD_VERSION), new ExpressionConst(i.OriginalVersion))
+                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(EntityBase.FIELD_ID), new ExpressionConst(i.Id)),
+                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(EntityBase.FIELD_VERSION), new ExpressionConst(i.OriginalVersion))
                             }, i.GetModifications().Select(f => new SqlParameter(f.Key, ConvertValueForWriting(f.Value))));
                         case EntityState.Deleted:
                             return new EntityDeleteStatement(i.GetType(), new ExpressionBase[] {
-                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(Entity.FIELD_ID), new ExpressionConst(i.Id)),
-                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(Entity.FIELD_VERSION), new ExpressionConst(i.OriginalVersion))
+                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(EntityBase.FIELD_ID), new ExpressionConst(i.Id)),
+                                new ExpressionBinary(ExpressionBinary.Operation.Equal, new ExpressionField(EntityBase.FIELD_VERSION), new ExpressionConst(i.OriginalVersion))
                             });
                         default:
                             throw new InvalidOperationException();
@@ -598,7 +598,7 @@ namespace MirrorM.Internal
             await DatabaseConnection.ExecuteCommandBatchAsync(commands, createTransaction);
         }
 
-        public void Add(Entity entity)
+        public void Add(EntityBase entity)
         {
             if (EntityStorage.ContainsKey(entity.Id))
                 throw new InvalidOperationException($"Entity with id {entity.Id} already exists in storage");

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MirrorM.Internal.Query.Builder
 {
-    internal class QueryBuilder<T> : IQuery<T>, IEntityQuerySchema, IEntityAggregateQuerySchema where T : Entity
+    internal class QueryBuilder<T> : IQuery<T>, IEntityQuerySchema, IEntityAggregateQuerySchema where T : EntityBase
     {
         private List<ExpressionBase> ConditionsWritable { get; } = new List<ExpressionBase>();
         private List<Sorting> SortingsWritable { get; } = new List<Sorting>();

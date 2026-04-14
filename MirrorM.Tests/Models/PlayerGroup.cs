@@ -4,7 +4,7 @@ using MirrorM.Relations;
 namespace MirrorM.Tests.Models
 {
     [Entity("player_groups")]
-    public class PlayerGroup : Entity
+    public class PlayerGroup : EntityBase
     {
         public const string CONNECTION_TABLE_PLAYER = "player_group_player";
         public const string CONNECTION_KEY = "group_id";

@@ -8,16 +8,16 @@ namespace MirrorM.Internal
 {
     internal interface IContextInternal
     {
-        void Add(Entity entity);
+        void Add(EntityBase entity);
         void AddConnection(string connectionTable, string key1, Guid id1, string key2, Guid id2);
         void RemoveConnection(string connectionTable, string key1, Guid id1, string key2, Guid id2);
 
-        IAsyncEnumerable<T> ExecuteGetQueryAsync<T>(QueryBuilder<T> builder) where T : Entity;
+        IAsyncEnumerable<T> ExecuteGetQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase;
 
-        Task<R> ExecuteSumQueryAsync<T, R>(QueryBuilder<T> builder) where T : Entity;
-        Task<R?> ExecuteMaxQueryAsync<T, R>(QueryBuilder<T> builder) where T : Entity where R : struct;
-        Task<int> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : Entity;
-        Task<bool> ExecuteExistsQueryAsync<T>(QueryBuilder<T> builder) where T : Entity;
+        Task<R> ExecuteSumQueryAsync<T, R>(QueryBuilder<T> builder) where T : EntityBase;
+        Task<R?> ExecuteMaxQueryAsync<T, R>(QueryBuilder<T> builder) where T : EntityBase where R : struct;
+        Task<int> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase;
+        Task<bool> ExecuteExistsQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase;
 
         ConnectionTableStorage? GetConnectionTableStorage(string connectionTable);
 

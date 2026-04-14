@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace MirrorM
 {
-    public abstract class Entity
+    public abstract class EntityBase
     {
         public const string FIELD_ID = "id";
         public const string FIELD_TYPE = "_type";
@@ -62,11 +62,11 @@ namespace MirrorM
             private set => SetValue(FIELD_UPDATED_AT, value);
         }
 
-        protected Entity(IContext context) : this(context, Guid.NewGuid())
+        protected EntityBase(IContext context) : this(context, Guid.NewGuid())
         {
         }
 
-        protected Entity(IContext context, Guid id)
+        protected EntityBase(IContext context, Guid id)
         {
             Context = context;
 
@@ -91,7 +91,7 @@ namespace MirrorM
             ContextInternal.Add(this);
         }
 
-        protected Entity(IContext context, IFields fields)
+        protected EntityBase(IContext context, IFields fields)
         {
             Context = context;
 
@@ -142,7 +142,7 @@ namespace MirrorM
             }
         }
 
-        protected IRelationIdToField<T> GetRelationIdToField<T>(Expression<Func<T, Guid>> keyProvider) where T : Entity
+        protected IRelationIdToField<T> GetRelationIdToField<T>(Expression<Func<T, Guid>> keyProvider) where T : EntityBase
         {
             var field = GetProperty(keyProvider).GetCustomAttribute<FieldAttribute>()?.FieldName ?? throw new FieldAttributeNotFoundException();
 
@@ -158,17 +158,17 @@ namespace MirrorM
             return (IRelationIdToField<T>)RelationCache[key];
         }
 
-        protected IRelationFieldToId<T> GetRelationFieldToId<R, T>(Expression<Func<R, Guid?>> keyProvider) where T : Entity where R : Entity
+        protected IRelationFieldToId<T> GetRelationFieldToId<R, T>(Expression<Func<R, Guid?>> keyProvider) where T : EntityBase where R : EntityBase
         {
             return GetRelationFieldToIdInternal<T>(keyProvider);
         }
 
-        protected IRelationFieldToId<T> GetRelationFieldToId<R, T>(Expression<Func<R, Guid>> keyProvider) where T : Entity where R : Entity
+        protected IRelationFieldToId<T> GetRelationFieldToId<R, T>(Expression<Func<R, Guid>> keyProvider) where T : EntityBase where R : EntityBase
         {
             return GetRelationFieldToIdInternal<T>(keyProvider);
         }
 
-        private IRelationFieldToId<T> GetRelationFieldToIdInternal<T>(Expression keyProvider) where T : Entity
+        private IRelationFieldToId<T> GetRelationFieldToIdInternal<T>(Expression keyProvider) where T : EntityBase
         {
             var field = GetProperty(keyProvider).GetCustomAttribute<FieldAttribute>()?.FieldName ?? throw new FieldNameNotFoundException();
 
@@ -184,7 +184,7 @@ namespace MirrorM
             return (IRelationFieldToId<T>)RelationCache[key];
         }
 
-        protected IRelationIdToFieldMany<T> GetRelationIdToFieldMany<T>(Expression<Func<T, Guid>> keyProvider) where T : Entity
+        protected IRelationIdToFieldMany<T> GetRelationIdToFieldMany<T>(Expression<Func<T, Guid>> keyProvider) where T : EntityBase
         {
             var field = GetProperty(keyProvider).GetCustomAttribute<FieldAttribute>()?.FieldName ?? throw new FieldNameNotFoundException();
 
@@ -200,7 +200,7 @@ namespace MirrorM
             return (IRelationIdToFieldMany<T>)RelationCache[key];
         }
 
-        protected IRelationIdManyToIdMany<T> GetRelationManyToManyForeign<T>(string connectionTable, string connectionKey, string foreignConnectionKey) where T : Entity
+        protected IRelationIdManyToIdMany<T> GetRelationManyToManyForeign<T>(string connectionTable, string connectionKey, string foreignConnectionKey) where T : EntityBase
         {
             var key = $"RelationIdManyToIdMany:{typeof(T).Name}:{connectionTable}";
 
@@ -237,7 +237,7 @@ namespace MirrorM
             return Fields.GetEnumerable().Where(f => UpdatedFields.Contains(f.Key)).ToDictionary(f => f.Key, f => f.Value);
         }
 
-        internal void UpdateFromCommited(Entity justSavedEntity)
+        internal void UpdateFromCommited(EntityBase justSavedEntity)
         {
             if (!IsUpdated)
             {

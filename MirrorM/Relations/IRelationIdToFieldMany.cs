@@ -1,6 +1,6 @@
 ﻿namespace MirrorM.Relations
 {
-    public interface IRelationIdToFieldMany<T> where T : Entity
+    public interface IRelationIdToFieldMany<T> where T : EntityBase
     {
         IQuery<T> Query();
 

@@ -6,7 +6,7 @@ using MirrorM.Tests.Tools;
 namespace MirrorM.Tests.Models
 {
     [Entity(TABLE)]
-    public class Player : Entity
+    public class Player : EntityBase
     {
         private const string TABLE = "players";
 

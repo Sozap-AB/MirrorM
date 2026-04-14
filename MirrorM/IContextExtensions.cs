@@ -5,12 +5,12 @@ namespace MirrorM
 {
     public static class IContextExtensions
     {
-        public static async Task<T> GetByIdAsync<T>(this IContext context, Guid entityId) where T : Entity
+        public static async Task<T> GetByIdAsync<T>(this IContext context, Guid entityId) where T : EntityBase
         {
             return (await context.GetOptionalByIdAsync<T>(entityId))!;
         }
 
-        public static Task<T?> GetOptionalByIdAsync<T>(this IContext context, Guid entityId) where T : Entity
+        public static Task<T?> GetOptionalByIdAsync<T>(this IContext context, Guid entityId) where T : EntityBase
         {
             return context.Query<T>().Where(e => e.Id == entityId).FirstOrDefaultAsync();
         }

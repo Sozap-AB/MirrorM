@@ -4,7 +4,7 @@ using MirrorM.Relations;
 namespace MirrorM.Tests.Models
 {
     [Entity("player_powerups", subTypes: [typeof(PlayerPowerupHealthBoost), typeof(PlayerPowerupEnergyBoost)])]
-    public abstract class PlayerPowerup : Entity
+    public abstract class PlayerPowerup : EntityBase
     {
         private const string FIELD_USER_ID = "player_id";
 

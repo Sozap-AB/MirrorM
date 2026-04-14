@@ -159,7 +159,7 @@ namespace MirrorM.Internal.Query.Builder
             throw new NotSupportedException($"Unary expression of type {unaryExpression.NodeType} is not supported.");
         }
 
-        public static ExpressionBase GenerateFromPredicate<T>(Expression<Func<T, bool>> predicate) where T : Entity
+        public static ExpressionBase GenerateFromPredicate<T>(Expression<Func<T, bool>> predicate) where T : EntityBase
         {
             var lambda = predicate as LambdaExpression;
 

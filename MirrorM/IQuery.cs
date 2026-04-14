@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MirrorM
 {
-    public interface IQuery<T> where T : Entity
+    public interface IQuery<T> where T : EntityBase
     {
         IQuery<T> Where(Expression<Func<T, bool>> predicate);
         IQuery<T> WhereRawSql(string sql, params SqlParameter[] parameters);

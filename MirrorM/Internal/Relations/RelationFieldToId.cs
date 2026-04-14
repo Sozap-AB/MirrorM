@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace MirrorM.Internal.Relations
 {
-    internal class RelationFieldToId<T> : IRelationFieldToId<T> where T : Entity
+    internal class RelationFieldToId<T> : IRelationFieldToId<T> where T : EntityBase
     {
-        private Entity Owner { get; }
+        private EntityBase Owner { get; }
         private string ForeignKey { get; }
 
-        public RelationFieldToId(Entity owner, string foreignKey)
+        public RelationFieldToId(EntityBase owner, string foreignKey)
         {
             Owner = owner;
             ForeignKey = foreignKey;

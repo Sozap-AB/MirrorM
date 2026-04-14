@@ -5,13 +5,13 @@ using System.Linq.Expressions;
 
 namespace MirrorM.Internal.Relations
 {
-    internal class RelationIdToFieldMany<T> : IRelationIdToFieldMany<T>, IRelationIdToFieldInternal where T : Entity
+    internal class RelationIdToFieldMany<T> : IRelationIdToFieldMany<T>, IRelationIdToFieldInternal where T : EntityBase
     {
-        private Entity Owner { get; }
+        private EntityBase Owner { get; }
         private Expression<Func<T, Guid>> FieldKeyProvider { get; }
         public string ForeignKey { get; }
 
-        public RelationIdToFieldMany(Entity owner, Expression<Func<T, Guid>> foreignKeyProvider)
+        public RelationIdToFieldMany(EntityBase owner, Expression<Func<T, Guid>> foreignKeyProvider)
         {
             Owner = owner;
             FieldKeyProvider = foreignKeyProvider;

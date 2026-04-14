@@ -5,12 +5,12 @@ namespace MirrorM.Internal.Query
 {
     internal static class ExpressionEvaluator
     {
-        public static bool EvaluateCondition(Entity entity, ExpressionBase expression, IContextInternal contextInternal)
+        public static bool EvaluateCondition(EntityBase entity, ExpressionBase expression, IContextInternal contextInternal)
         {
             return Evaluate<bool>(entity, expression, contextInternal);
         }
 
-        private static T Evaluate<T>(Entity entity, ExpressionBase expression, IContextInternal contextInternal)
+        private static T Evaluate<T>(EntityBase entity, ExpressionBase expression, IContextInternal contextInternal)
         {
             switch (expression)
             {
@@ -27,7 +27,7 @@ namespace MirrorM.Internal.Query
             }
         }
 
-        private static bool EvaluateConnectionMatchExpression(Entity entity, ExpressionConnectionMatch expression, IContextInternal contextInternal)
+        private static bool EvaluateConnectionMatchExpression(EntityBase entity, ExpressionConnectionMatch expression, IContextInternal contextInternal)
         {
             var connectionTableStorage = contextInternal.GetConnectionTableStorage(expression.ConnectionTable);
 
@@ -37,7 +37,7 @@ namespace MirrorM.Internal.Query
             return connectionTableStorage.IsEntityConnected((key: expression.OwnerKey, entity.Id), (key: expression.ForeignKey, expression.Value));
         }
 
-        private static T EvaluateBinaryExpression<T>(Entity entity, ExpressionBinary expression, IContextInternal contextInternal)
+        private static T EvaluateBinaryExpression<T>(EntityBase entity, ExpressionBinary expression, IContextInternal contextInternal)
         {
             switch (expression.Op)
             {

@@ -3,14 +3,14 @@ using MirrorM.Relations;
 
 namespace MirrorM.Internal.Relations
 {
-    internal class RelationIdManyToIdMany<T> : IRelationIdManyToIdMany<T>, IRelationIdManyToIdManyInternal where T : Entity
+    internal class RelationIdManyToIdMany<T> : IRelationIdManyToIdMany<T>, IRelationIdManyToIdManyInternal where T : EntityBase
     {
-        private Entity Owner { get; }
+        private EntityBase Owner { get; }
         private string ConnectionTable { get; }
         private string OwnerConnectionKey { get; }
         private string ForeignConnectionKey { get; }
 
-        public RelationIdManyToIdMany(Entity owner, string connectionTable, string ownerConnectionKey, string foreignConnectionKey)
+        public RelationIdManyToIdMany(EntityBase owner, string connectionTable, string ownerConnectionKey, string foreignConnectionKey)
         {
             Owner = owner;
             ConnectionTable = connectionTable;

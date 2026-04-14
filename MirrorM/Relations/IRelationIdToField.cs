@@ -2,7 +2,7 @@
 
 namespace MirrorM.Relations
 {
-    public interface IRelationIdToField<T> where T : Entity
+    public interface IRelationIdToField<T> where T : EntityBase
     {
         Task<T> GetAsync();
         Task<T?> GetOptionalAsync();
