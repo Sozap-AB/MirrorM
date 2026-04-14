@@ -20,5 +20,10 @@ namespace MirrorM.Internal
         {
             return new Context(await DatabaseAdapter.CreateConnectionAsync(), TypeConverters);
         }
+
+        public IContext CreateUninitializedContext()
+        {
+            return new Context(() => DatabaseAdapter.CreateConnectionAsync(), TypeConverters);
+        }
     }
 }

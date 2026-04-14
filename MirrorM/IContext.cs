@@ -16,6 +16,7 @@ namespace MirrorM
 
         Task ExecuteTransactionAsync(Func<Task> action);
 
+        Task InitializeAsync();
         Task CommitAsync();
 
         void SetSuperContext(ISuperContext? superContext);

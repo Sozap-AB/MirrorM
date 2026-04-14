@@ -40,5 +40,36 @@ namespace MirrorM.Tests
 
             Assert.Equal("INSERT INTO players (id, _version, _created_at, _updated_at, name, level) VALUES (:p1, :p2, :p3, :p4, :p5, :p6)", insertSql);
         }
+
+        [Fact]
+        public async Task DelayedInitializationTest()
+        {
+            var playerId = await ExecuteWithDatabaseAndGetAsync(async db =>
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                {
+                    await db.InitializeAsync();
+                });
+
+                return new Player(db, "player1", 5).Id;
+            });
+
+            using (var context = ContextProvider.CreateUninitializedContext())
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                {
+                    await context.Query<Player>().FirstAsync(x => x.Name == "player1");
+                });
+
+                await context.InitializeAsync();
+
+                Assert.Equal(
+                    playerId,
+                    (await context.Query<Player>().FirstAsync(x => x.Name == "player1")).Id
+                );
+
+                await context.CommitAsync();
+            }
+        }
     }
 }

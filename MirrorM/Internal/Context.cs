@@ -36,7 +36,10 @@ namespace MirrorM.Internal
             public IDictionary<string, ConnectionTableStorage> ConnectionStorage { get; } = new Dictionary<string, ConnectionTableStorage>();
         }
 
-        private IDatabaseConnection DatabaseConnection { get; }
+        private IDatabaseConnection? DatabaseConnectionOptional { get; set; }
+        private Func<Task<IDatabaseConnection>>? DatabaseConnectionInitializer { get; }
+
+        private IDatabaseConnection DatabaseConnection => DatabaseConnectionOptional ?? throw new InvalidOperationException("Database connection is not initialized!");
         private IEnumerable<ITypeConverter> TypeConverters { get; }
 
         private Memory ContextMemory { get; set; }
@@ -47,12 +50,34 @@ namespace MirrorM.Internal
 
         internal ISuperContext? SuperContext { get; private set; }
 
-        public Context(IDatabaseConnection databaseConnection, IEnumerable<ITypeConverter> typeConverters)
+        public Context(IDatabaseConnection databaseConnection, IEnumerable<ITypeConverter> typeConverters) : this(typeConverters)
         {
-            DatabaseConnection = databaseConnection;
+            DatabaseConnectionOptional = databaseConnection;
+            DatabaseConnectionInitializer = null;
+        }
+
+        public Context(Func<Task<IDatabaseConnection>> databaseConnectionInitializer, IEnumerable<ITypeConverter> typeConverters) : this(typeConverters)
+        {
+            DatabaseConnectionOptional = null;
+            DatabaseConnectionInitializer = databaseConnectionInitializer;
+        }
+
+        private Context(IEnumerable<ITypeConverter> typeConverters)
+        {
             TypeConverters = typeConverters;
 
             ContextMemory = new Memory();
+        }
+
+        public async Task InitializeAsync()
+        {
+            // if DatabaseConnectionInitializer == null, we assume context
+            // has been created with database connection constructor
+            if (DatabaseConnectionInitializer == null)
+                throw new InvalidOperationException("Context created this way shouldn't be initialized manually!");
+
+            if (DatabaseConnectionOptional == null)
+                DatabaseConnectionOptional = await DatabaseConnectionInitializer();
         }
 
         public void SetSuperContext(ISuperContext? superContext)
@@ -412,7 +437,7 @@ namespace MirrorM.Internal
 
         protected virtual void Dispose(bool disposing)
         {
-            DatabaseConnection.Dispose();
+            DatabaseConnectionOptional?.Dispose();
         }
 
         public IAsyncEnumerable<IReadOnlyDictionary<string, object?>> ExecuteSqlQueryAndGetRawResultAsync(string sql, params SqlParameter[] parameters)

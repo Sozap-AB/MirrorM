@@ -5,5 +5,6 @@ namespace MirrorM
     public interface IContextProvider
     {
         Task<IContext> CreateContextAsync();
+        IContext CreateUninitializedContext();
     }
 }

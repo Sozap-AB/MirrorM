@@ -6,7 +6,7 @@ namespace MirrorM.Tests.Tools
 {
     public class TestBase
     {
-        private IContextProvider ContextProvider { get; }
+        protected IContextProvider ContextProvider { get; }
 
         protected TestBase()
         {
