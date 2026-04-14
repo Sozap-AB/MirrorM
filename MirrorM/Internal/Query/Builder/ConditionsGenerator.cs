@@ -10,7 +10,7 @@ namespace MirrorM.Internal.Query.Builder
 {
     internal static class ConditionsGenerator
     {
-        private static bool IsExpressionTreeContainsField(Expression exp)
+        private static bool IsExpressionTreeContainsField(Expression entity, Expression exp)
         {
             switch (exp)
             {
@@ -22,43 +22,43 @@ namespace MirrorM.Internal.Query.Builder
 
                     break;
                 case BinaryExpression binaryExpression:
-                    return IsExpressionTreeContainsField(binaryExpression.Left) || IsExpressionTreeContainsField(binaryExpression.Right);
+                    return IsExpressionTreeContainsField(entity, binaryExpression.Left) || IsExpressionTreeContainsField(entity, binaryExpression.Right);
                 case UnaryExpression unaryExpression:
-                    return IsExpressionTreeContainsField(unaryExpression.Operand);
+                    return IsExpressionTreeContainsField(entity, unaryExpression.Operand);
                 case MethodCallExpression methodCallExpression:
-                    return IsExpressionTreeContainsField(methodCallExpression.Object) || methodCallExpression.Arguments.Any(a => IsExpressionTreeContainsField(a));
+                    return IsExpressionTreeContainsField(entity, methodCallExpression.Object) || methodCallExpression.Arguments.Any(a => IsExpressionTreeContainsField(entity, a));
             }
 
             return false;
         }
 
-        private static ExpressionBase Parse(Expression exp)
+        private static ExpressionBase Parse(Expression entity, Expression exp)
         {
-            if (!IsExpressionTreeContainsField(exp))
+            if (!IsExpressionTreeContainsField(entity, exp))
                 return new ExpressionConst(CalculateExpressionResult<object>(exp));
 
             switch (exp)
             {
                 case BinaryExpression binaryExpression:
-                    return ParseBinaryExpression(binaryExpression);
+                    return ParseBinaryExpression(entity, binaryExpression);
                 case UnaryExpression unaryExpression:
-                    return ParseUnaryExpression(unaryExpression);
+                    return ParseUnaryExpression(entity, unaryExpression);
                 case ConstantExpression constExpression:
                     return new ExpressionConst(constExpression.Value);
                 case MemberExpression memberExpression:
-                    return ParseMemberExpression(memberExpression);
+                    return ParseMemberExpression(entity, memberExpression);
                 case MethodCallExpression methodCallExpression:
-                    return ParseMethodCallExpression(methodCallExpression);
+                    return ParseMethodCallExpression(entity, methodCallExpression);
                 default:
                     throw new NotSupportedException($"Expression type {exp.NodeType} is not supported.");
             }
         }
 
-        private static ExpressionBase ParseMemberExpression(MemberExpression memberExpression)
+        private static ExpressionBase ParseMemberExpression(Expression entity, MemberExpression memberExpression)
         {
             var fieldInfo = memberExpression.Member.GetCustomAttribute<FieldAttribute>();
 
-            if (fieldInfo == null)
+            if (fieldInfo == null || memberExpression.Expression != entity)
                 return new ExpressionConst(CalculateExpressionResult<object>(memberExpression));
 
             return new ExpressionField(fieldInfo.FieldName);
@@ -69,7 +69,7 @@ namespace MirrorM.Internal.Query.Builder
             return Expression.Lambda<Func<T>>(Expression.Convert(expression, typeof(T))).Compile()();
         }
 
-        private static ExpressionBinary ParseBinaryExpression(BinaryExpression binaryExpression)
+        private static ExpressionBinary ParseBinaryExpression(Expression entity, BinaryExpression binaryExpression)
         {
             ExpressionBinary.Operation GetOp()
             {
@@ -116,19 +116,19 @@ namespace MirrorM.Internal.Query.Builder
 
                 return new ExpressionBinary(
                     GetOp(),
-                    Parse(lue.Operand),
+                    Parse(entity, lue.Operand),
                     new ExpressionConst(Enum.ToObject(lue.Operand.Type, CalculateExpressionResult<int>(binaryExpression.Right)))
                 );
             }
 
             return new ExpressionBinary(
                 GetOp(),
-                Parse(binaryExpression.Left),
-                Parse(binaryExpression.Right)
+                Parse(entity, binaryExpression.Left),
+                Parse(entity, binaryExpression.Right)
             );
         }
 
-        private static ExpressionBase ParseMethodCallExpression(MethodCallExpression methodCallExpression)
+        private static ExpressionBase ParseMethodCallExpression(Expression entity, MethodCallExpression methodCallExpression)
         {
             if (methodCallExpression.Method.Name == nameof(Enumerable.Contains))
             {
@@ -137,12 +137,12 @@ namespace MirrorM.Internal.Query.Builder
 
                 if (methodCallExpression.Arguments.Count == 2) // extension method
                 {
-                    value = Parse(methodCallExpression.Arguments[1]);
+                    value = Parse(entity, methodCallExpression.Arguments[1]);
                     enumerable = CalculateExpressionResult<IEnumerable>(methodCallExpression.Arguments[0]);
                 }
                 else if (methodCallExpression.Arguments.Count == 1) // member method
                 {
-                    value = Parse(methodCallExpression.Arguments[0]);
+                    value = Parse(entity, methodCallExpression.Arguments[0]);
                     enumerable = CalculateExpressionResult<IEnumerable>(methodCallExpression.Object!);
                 }
 
@@ -155,11 +155,11 @@ namespace MirrorM.Internal.Query.Builder
             throw new NotSupportedException($"Method {methodCallExpression.Method.Name} is not supported.");
         }
 
-        private static ExpressionBase ParseUnaryExpression(UnaryExpression unaryExpression)
+        private static ExpressionBase ParseUnaryExpression(Expression entity, UnaryExpression unaryExpression)
         {
             if (unaryExpression.NodeType == ExpressionType.Not)
             {
-                return new ExpressionNot(Parse(unaryExpression.Operand));
+                return new ExpressionNot(Parse(entity, unaryExpression.Operand));
             }
 
             throw new NotSupportedException($"Unary expression of type {unaryExpression.NodeType} is not supported.");
@@ -167,12 +167,10 @@ namespace MirrorM.Internal.Query.Builder
 
         public static ExpressionBase GenerateFromPredicate<T>(Expression<Func<T, bool>> predicate) where T : EntityBase
         {
-            var lambda = predicate as LambdaExpression;
+            LambdaExpression lambda = (predicate as LambdaExpression) ?? throw new NotSupportedException();
+            ParameterExpression argument = lambda.Parameters.SingleOrDefault(p => p.Type == typeof(T)) ?? throw new NotSupportedException();
 
-            if (lambda == null)
-                throw new NotSupportedException();
-
-            return Parse(lambda.Body);
+            return Parse(argument, lambda.Body);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace MirrorM.Tests.Models
         public const string CONNECTION_KEY = "group_id";
 
         private const string FIELD_NAME = "name";
+        private const string FIELD_MIN_LEVEL = "min_level";
 
         [Field(FIELD_NAME)]
         public string Name
@@ -18,15 +19,23 @@ namespace MirrorM.Tests.Models
             set => SetValue(FIELD_NAME, value);
         }
 
+        [Field(FIELD_MIN_LEVEL)]
+        public int MinLevel
+        {
+            get => GetValue<int>(FIELD_MIN_LEVEL);
+            set => SetValue(FIELD_MIN_LEVEL, value);
+        }
+
         public IRelationIdManyToIdMany<Player> Players => GetRelationManyToManyForeign<Player>(
             CONNECTION_TABLE_PLAYER,
             CONNECTION_KEY,
             Player.CONNECTION_KEY
         );
 
-        public PlayerGroup(IContext db, string name) : base(db)
+        public PlayerGroup(IContext db, string name, int minLevel = 1) : base(db)
         {
             Name = name;
+            MinLevel = minLevel;
         }
 
         public PlayerGroup(IContext db, IFields fields) : base(db, fields)

@@ -136,5 +136,27 @@ namespace MirrorM.Tests
                 Assert.Equal("player2", result.Last().Name);
             });
         }
+
+        [Fact]
+        public async Task FieldEvaluationInQueryTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                _ = new Player(db, "player1", 11);
+                _ = new PlayerGroup(db, "group1", 10);
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var player = await db.Query<Player>().FirstAsync(x => x.Name == "player1");
+
+                // player.Level should be evaluated, while x.MinLevel should be treated as a field reference
+                var group = await db.Query<PlayerGroup>().FirstAsync(x => x.MinLevel <= player.Level);
+
+                Assert.Equal("group1", group.Name);
+            });
+        }
     }
 }

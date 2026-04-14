@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS player_details (
 CREATE TABLE IF NOT EXISTS player_groups (
     id UUID PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
+    min_level INT NOT NULL,
     _version BIGINT NOT NULL,
     _updated_at TIMESTAMP NOT NULL,
     _created_at TIMESTAMP NOT NULL
