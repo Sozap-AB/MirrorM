@@ -77,7 +77,27 @@ namespace MirrorM.Npgsql.Internal
 
         public static SqlExpression GenerateEntitySumSql(IEntityAggregateQuerySchema schema)
         {
-            return GenerateEntityAggregateSql(schema, "SUM", schema.AggregateField!.Name);
+            var parameters = new ParametersCollection();
+
+            StringBuilder sqlBuilder = new StringBuilder();
+
+            var fieldName = schema.AggregateField!.Name;
+
+            sqlBuilder.Append($"SELECT SUM({fieldName}) FROM (SELECT {fieldName} FROM ");
+
+            AppendTableName(schema, sqlBuilder);
+
+            AppendConditions(schema, sqlBuilder, parameters); // WHERE ...
+            AppendSortings(schema, sqlBuilder); // ORDER BY ...
+            AppendSkip(schema, sqlBuilder); // OFFSET ...
+            AppendTake(schema, sqlBuilder); // LIMIT ...
+
+            sqlBuilder.Append(")");
+
+            return new SqlExpression(
+                sqlBuilder.ToString(),
+                parameters.Parameters
+            );
         }
 
         public static SqlExpression GenerateEntityMaxSql(IEntityAggregateQuerySchema schema)

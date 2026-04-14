@@ -182,6 +182,26 @@ namespace MirrorM.Tests
         }
 
         [Fact]
+        public async Task SumWithOrderByQueryTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                _ = new Player(db, "player1", 1);
+                _ = new Player(db, "player2", 2);
+                _ = new Player(db, "player3", 3);
+                _ = new Player(db, "player4", 4);
+                _ = new Player(db, "player5", 5);
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                Assert.Equal(12, await db.Query<Player>().OrderByDescending(x => x.Level).Take(3).SumAsync(x => x.Level));
+            });
+        }
+
+        [Fact]
         public async Task FieldEvaluationInQueryTest()
         {
             await ExecuteWithDatabaseAsync(db =>
