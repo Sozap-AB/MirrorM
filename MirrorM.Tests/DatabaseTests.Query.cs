@@ -40,6 +40,20 @@ namespace MirrorM.Tests
         }
 
         [Fact]
+        public async Task ContainsConditionTest()
+        {
+            var playerId = await ExecuteWithDatabaseAndGetAsync(db =>
+            {
+                return Task.FromResult(new Player(db, "player1", 5).Id);
+            });
+
+            await ExecuteWithDatabaseAsync(async db => Assert.Equal(playerId, (await db.Query<Player>().Where(x => new string[] { "player1", "player2", "player3" }.Contains(x.Name)).FirstAsync()).Id));
+            await ExecuteWithDatabaseAsync(async db => Assert.Equal(playerId, (await db.Query<Player>().Where(x => new List<int>(new int[] { 1, 2, 5 }).Contains(x.Level)).FirstAsync()).Id));
+            await ExecuteWithDatabaseAsync(async db => Assert.Null(await db.Query<Player>().Where(x => new string[] { "player2", "player3" }.Contains(x.Name)).FirstOrDefaultAsync()));
+            await ExecuteWithDatabaseAsync(async db => Assert.Null(await db.Query<Player>().Where(x => new int[] { 4, 3, 2 }.Contains(x.Level)).FirstOrDefaultAsync()));
+        }
+
+        [Fact]
         public async Task RawSqlQueryTest()
         {
             var playerId = await ExecuteWithDatabaseAndGetAsync(db =>

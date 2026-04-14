@@ -1,5 +1,6 @@
 ﻿using MirrorM.AdapterInterface.Query.Conditions;
 using System;
+using System.Linq;
 
 namespace MirrorM.Internal.Query
 {
@@ -22,9 +23,18 @@ namespace MirrorM.Internal.Query
                     return entity.Fields.GetValue<T>(fieldExpression.FieldName);
                 case ExpressionConnectionMatch connectionMatchExpression:
                     return (T)(object)EvaluateConnectionMatchExpression(entity, connectionMatchExpression, contextInternal);
+                case ExpressionIn inExpression:
+                    return (T)(object)EvaluateInExpression(entity, inExpression, contextInternal);
                 default:
                     throw new NotSupportedException($"Expression type {expression.GetType()} is not supported.");
             }
+        }
+
+        private static bool EvaluateInExpression(EntityBase entity, ExpressionIn expression, IContextInternal contextInternal)
+        {
+            var value = Evaluate<dynamic>(entity, expression.Value, contextInternal);
+
+            return expression.Collection.Any(x => x.Equals(value));
         }
 
         private static bool EvaluateConnectionMatchExpression(EntityBase entity, ExpressionConnectionMatch expression, IContextInternal contextInternal)

@@ -130,19 +130,22 @@ namespace MirrorM.Internal.Query.Builder
             if (methodCallExpression.Method.Name == nameof(Enumerable.Contains))
             {
                 IEnumerable? enumerable = null;
+                ExpressionBase? value = null;
 
                 if (methodCallExpression.Arguments.Count == 2) // extension method
                 {
+                    value = Parse(methodCallExpression.Arguments[1]);
                     enumerable = CalculateExpressionResult<IEnumerable>(methodCallExpression.Arguments[0]);
                 }
                 else if (methodCallExpression.Arguments.Count == 1) // member method
                 {
+                    value = Parse(methodCallExpression.Arguments[0]);
                     enumerable = CalculateExpressionResult<IEnumerable>(methodCallExpression.Object!);
                 }
 
                 if (enumerable != null)
                 {
-                    return new ExpressionIn(enumerable.Cast<object>());
+                    return new ExpressionIn(value!, enumerable.Cast<object>());
                 }
             }
 

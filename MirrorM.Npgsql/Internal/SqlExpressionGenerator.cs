@@ -261,6 +261,8 @@ namespace MirrorM.Npgsql.Internal
                         $"c.{expressionConnectionMatch.OwnerKey} = m.id AND " +
                         $"c.{expressionConnectionMatch.ForeignKey} = :{parametersCollection.AddParameter(new SqlParameterValue(expressionConnectionMatch.Value))}" +
                     ")";
+                case ExpressionIn expressionIn:
+                    return $"({GenerateConditionSql(expressionIn.Value, parametersCollection)} IN ({string.Join(", ", expressionIn.Collection.Select(i => WrapConstant(i, parametersCollection)))}))";
                 case ExpressionRawSql expressionRawSql:
                     var sql = expressionRawSql.Sql;
 
