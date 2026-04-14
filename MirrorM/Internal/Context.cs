@@ -130,7 +130,11 @@ namespace MirrorM.Internal
 
         public IAsyncEnumerable<T> ExecuteSqlQueryAsync<T>(string sql, params SqlParameter[] parameters) where T : EntityBase
         {
-            return DatabaseConnection.ExecuteRawSelectAsync(sql, parameters, rec => GetOrSaveEntityToStorage<T>(rec));
+            return DatabaseConnection.ExecuteRawSelectAsync(
+                sql,
+                ConvertParametersForWriting(parameters),
+                rec => GetOrSaveEntityToStorage<T>(rec)
+            );
         }
 
         public async IAsyncEnumerable<T> ExecuteGetQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase
@@ -445,7 +449,7 @@ namespace MirrorM.Internal
 
         public IAsyncEnumerable<IReadOnlyDictionary<string, object?>> ExecuteSqlQueryAndGetRawResultAsync(string sql, params SqlParameter[] parameters)
         {
-            return DatabaseConnection.ExecuteRawSelectAsync(sql, parameters, rec =>
+            return DatabaseConnection.ExecuteRawSelectAsync(sql, ConvertParametersForWriting(parameters), rec =>
             {
                 var dict = new Dictionary<string, object?>(capacity: rec.FieldCount);
 
@@ -469,7 +473,7 @@ namespace MirrorM.Internal
             return reader.GetValue(index);
         }
 
-        private SqlParameterValue ConvertValueForWriting(object? value)
+        private SqlParameterValue? TryConvertForWriting(object? value)
         {
             if (value == null)
                 return new SqlParameterValue(DBNull.Value, null);
@@ -480,12 +484,27 @@ namespace MirrorM.Internal
                     return result;
             }
 
-            return new SqlParameterValue(value, null);
+            return null;
+        }
+
+        private SqlParameterValue ConvertValueForWriting(object? value)
+        {
+            return TryConvertForWriting(value) ?? new SqlParameterValue(value!, null);
+        }
+
+        private IEnumerable<SqlParameter> ConvertParametersForWriting(IEnumerable<SqlParameter> parameters)
+        {
+            return parameters.Select(p =>
+            {
+                var v = TryConvertForWriting(p.Value.Value);
+
+                return v != null ? new SqlParameter(p.Name, v) : p;
+            });
         }
 
         public Task<int> ExecuteSqlCommandAsync(string sql, params SqlParameter[] parameters)
         {
-            return DatabaseConnection.ExecuteRawCommandAsync(sql, parameters);
+            return DatabaseConnection.ExecuteRawCommandAsync(sql, ConvertParametersForWriting(parameters));
         }
 
         public async Task ExecuteTransactionAsync(Func<Task> action)

@@ -85,6 +85,10 @@ namespace MirrorM.Tests
                 var result = (await Player.FindByNamePartialAsync(db, "aye")).First();
 
                 Assert.Equal(playerId, result.Id);
+
+                var details = await PlayerDetails.InstantInsertAsync(db, playerId, 42);
+
+                Assert.Equal(42, details.MetaData.GetValue<int>());
             });
         }
 

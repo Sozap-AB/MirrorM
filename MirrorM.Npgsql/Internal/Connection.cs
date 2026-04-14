@@ -126,7 +126,7 @@ namespace MirrorM.Npgsql.Internal
             return (bool)(await cmd.ExecuteScalarAsync())!;
         }
 
-        public async IAsyncEnumerable<T> ExecuteRawSelectAsync<T>(string sql, SqlParameter[] parameters, Func<IDataReader, T> recordHandler)
+        public async IAsyncEnumerable<T> ExecuteRawSelectAsync<T>(string sql, IEnumerable<SqlParameter> parameters, Func<IDataReader, T> recordHandler)
         {
             await using var cmd = CreateCommandFromSqlAndParameters(sql, parameters);
 
@@ -138,7 +138,7 @@ namespace MirrorM.Npgsql.Internal
                 yield return recordHandler(reader);
         }
 
-        public async Task<int> ExecuteRawCommandAsync(string sql, SqlParameter[] parameters)
+        public async Task<int> ExecuteRawCommandAsync(string sql, IEnumerable<SqlParameter> parameters)
         {
             await using var cmd = new NpgsqlCommand(sql, PgConnection);
 

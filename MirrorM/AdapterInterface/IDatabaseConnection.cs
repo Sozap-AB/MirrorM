@@ -19,8 +19,8 @@ namespace MirrorM.AdapterInterface
 
         Task ExecuteCommandBatchAsync(IEnumerable<IModificationSchema> expressions, bool createTransaction);
 
-        IAsyncEnumerable<T> ExecuteRawSelectAsync<T>(string sql, SqlParameter[] parameters, Func<IDataReader, T> recordHandler);
-        Task<int> ExecuteRawCommandAsync(string sql, SqlParameter[] parameters);
+        IAsyncEnumerable<T> ExecuteRawSelectAsync<T>(string sql, IEnumerable<SqlParameter> parameters, Func<IDataReader, T> recordHandler);
+        Task<int> ExecuteRawCommandAsync(string sql, IEnumerable<SqlParameter> parameters);
 
         Task ExecuteWrappedInTransactionAsync(Func<Task> action);
 
