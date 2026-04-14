@@ -38,7 +38,7 @@ namespace MirrorM.Tests
                 return Task.CompletedTask;
             });
 
-            Assert.Equal("INSERT INTO players (id, _version, _created_at, _updated_at, name, level) VALUES (:p1, :p2, :p3, :p4, :p5, :p6)", insertSql);
+            Assert.Equal("INSERT INTO players (id, _version, _created_at, _updated_at, name, level, status) VALUES (:p1, :p2, :p3, :p4, :p5, :p6, :p7)", insertSql);
         }
 
         [Fact]

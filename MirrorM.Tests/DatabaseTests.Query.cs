@@ -54,6 +54,25 @@ namespace MirrorM.Tests
         }
 
         [Fact]
+        public async Task EnumConditionsTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                _ = new Player(db, "player1", 5);
+                var player2 = new Player(db, "player2", 5);
+
+                player2.PlayerStatus = Player.Status.Inactive;
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db => Assert.Equal("player1", (await db.Query<Player>().FirstAsync(x => x.PlayerStatus == Player.Status.Active)).Name));
+            await ExecuteWithDatabaseAsync(async db => Assert.Equal("player2", (await db.Query<Player>().FirstAsync(x => x.PlayerStatus == Player.Status.Inactive)).Name));
+            await ExecuteWithDatabaseAsync(async db => Assert.Equal("player1", (await db.Query<Player>().FirstAsync(x => x.PlayerStatus != Player.Status.Inactive)).Name));
+            await ExecuteWithDatabaseAsync(async db => Assert.Equal("player2", (await db.Query<Player>().FirstAsync(x => x.PlayerStatus != Player.Status.Active)).Name));
+        }
+
+        [Fact]
         public async Task RawSqlQueryTest()
         {
             var playerId = await ExecuteWithDatabaseAndGetAsync(db =>

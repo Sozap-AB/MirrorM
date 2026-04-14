@@ -1,6 +1,8 @@
 ﻿using MirrorM.Config;
 using MirrorM.Npgsql;
 using MirrorM.Tests.Converters;
+using MirrorM.Tests.Models;
+using Npgsql.NameTranslation;
 
 namespace MirrorM.Tests.Tools
 {
@@ -11,7 +13,10 @@ namespace MirrorM.Tests.Tools
         protected TestBase()
         {
             ContextProvider = new ContextProviderConfigBuilder()
-                .UseNpgsqlAdapter(Constants.CONNECTION_STRING)
+                .UseNpgsqlAdapter(Constants.CONNECTION_STRING, dsb =>
+                {
+                    dsb.MapEnum<Player.Status>("player_status", new NpgsqlNullNameTranslator());
+                })
                 .UseTypeConverters(new JsonNodeConverter())
                 .Build();
         }

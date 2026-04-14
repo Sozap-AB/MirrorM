@@ -8,12 +8,19 @@ namespace MirrorM.Tests.Models
     [Entity(TABLE)]
     public class Player : EntityBase
     {
+        public enum Status
+        {
+            Active,
+            Inactive,
+        }
+
         private const string TABLE = "players";
 
         public const string CONNECTION_KEY = "player_id";
 
         private const string FIELD_NAME = "name";
         private const string FIELD_LEVEL = "level";
+        private const string FIELD_STATUS = "status";
 
         [Field(FIELD_NAME)]
         public string Name
@@ -27,6 +34,13 @@ namespace MirrorM.Tests.Models
         {
             get => GetValue<int>(FIELD_LEVEL);
             set => SetValue(FIELD_LEVEL, value);
+        }
+
+        [Field(FIELD_STATUS)]
+        public Status PlayerStatus
+        {
+            get => GetValue<Status>(FIELD_STATUS);
+            set => SetValue(FIELD_STATUS, value);
         }
 
         public IRelationIdToField<PlayerDetails> PlayerDetails => GetRelationIdToField<PlayerDetails>(x => x.PlayerId);
@@ -50,6 +64,7 @@ namespace MirrorM.Tests.Models
         {
             Name = name;
             Level = level;
+            PlayerStatus = Status.Active;
         }
 
         public Player(IContext db, IFields fields) : base(db, fields)

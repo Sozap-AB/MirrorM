@@ -1,7 +1,10 @@
-﻿CREATE TABLE IF NOT EXISTS players (
+﻿CREATE TYPE player_status AS ENUM ('Active', 'Inactive');
+
+CREATE TABLE IF NOT EXISTS players (
     id UUID PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
     level INT NOT NULL,
+    status player_status NOT NULL,
     _version BIGINT NOT NULL,
     _updated_at TIMESTAMP NOT NULL,
     _created_at TIMESTAMP NOT NULL

@@ -106,15 +106,18 @@ namespace MirrorM.Internal.Query.Builder
                 }
             }
 
-            if (binaryExpression.Left.Type.IsEnum && binaryExpression.Right.Type == typeof(int))
+            if (binaryExpression.Left.NodeType == ExpressionType.Convert &&
+                binaryExpression.Left is UnaryExpression lue &&
+                lue.Operand.Type.IsEnum &&
+                binaryExpression.Right.Type == typeof(int))
             {
                 // .NET converts enum consts to int in expressions,
                 // so we need to convert it back
 
                 return new ExpressionBinary(
                     GetOp(),
-                    Parse(binaryExpression.Left),
-                    new ExpressionConst(Enum.ToObject(binaryExpression.Left.Type, CalculateExpressionResult<int>(binaryExpression.Right)))
+                    Parse(lue.Operand),
+                    new ExpressionConst(Enum.ToObject(lue.Operand.Type, CalculateExpressionResult<int>(binaryExpression.Right)))
                 );
             }
 
