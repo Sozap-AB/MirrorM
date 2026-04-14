@@ -253,10 +253,13 @@ namespace MirrorM.Internal
 
         private static GetQueryStrategy CalculateGetQueryStrategy(IEntityQuerySchema schema)
         {
-            if (schema.SkipCount > 0 || schema.TakeCount.HasValue)
+            if (schema.Conditions.Any(x => x is ExpressionRawSql))
                 return GetQueryStrategy.UseDbSelection;
 
-            if (schema.Conditions.Any(x => x is ExpressionRawSql))
+            if (schema.SkipCount > 0)
+                return GetQueryStrategy.UseDbSelection;
+
+            if (schema.Sortings.Any() && schema.TakeCount.HasValue)
                 return GetQueryStrategy.UseDbSelection;
 
             return GetQueryStrategy.Default;
