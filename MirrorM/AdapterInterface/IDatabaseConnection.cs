@@ -14,7 +14,7 @@ namespace MirrorM.AdapterInterface
 
         Task<R> ExecuteSumAsync<R>(IEntityAggregateQuerySchema schema);
         Task<R?> ExecuteMaxAsync<R>(IEntityAggregateQuerySchema schema) where R : struct;
-        Task<int> ExecuteCountAsync(IEntityAggregateQuerySchema schema);
+        Task<long> ExecuteCountAsync(IEntityAggregateQuerySchema schema);
         Task<bool> ExecuteExistsAsync(IEntityAggregateQuerySchema schema);
 
         Task ExecuteCommandBatchAsync(IEnumerable<IModificationSchema> expressions, bool createTransaction);

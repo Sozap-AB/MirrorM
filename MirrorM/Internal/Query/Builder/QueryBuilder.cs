@@ -102,7 +102,7 @@ namespace MirrorM.Internal.Query.Builder
             return Context.ExecuteSumQueryAsync<T, R>(this);
         }
 
-        public Task<int> CountAsync()
+        public Task<long> CountAsync()
         {
             return Context.ExecuteCountQueryAsync(this);
         }

@@ -142,6 +142,26 @@ namespace MirrorM.Tests
         }
 
         [Fact]
+        public async Task CountQueryTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                _ = new Player(db, "player1", 1);
+                _ = new Player(db, "player2", 2);
+                _ = new Player(db, "player3", 3);
+                _ = new Player(db, "player4", 4);
+                _ = new Player(db, "player5", 5);
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                Assert.Equal(3, await db.Query<Player>().Where(x => x.Level >= 2 && x.Level <= 4).CountAsync());
+            });
+        }
+
+        [Fact]
         public async Task FieldEvaluationInQueryTest()
         {
             await ExecuteWithDatabaseAsync(db =>

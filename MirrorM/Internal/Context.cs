@@ -114,7 +114,7 @@ namespace MirrorM.Internal
             return DatabaseConnection.ExecuteMaxAsync<R>(builder);
         }
 
-        public Task<int> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase
+        public Task<long> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase
         {
             //TODO: we should take uncommitted changes into account
 

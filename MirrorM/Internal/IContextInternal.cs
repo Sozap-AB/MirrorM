@@ -16,7 +16,7 @@ namespace MirrorM.Internal
 
         Task<R> ExecuteSumQueryAsync<T, R>(QueryBuilder<T> builder) where T : EntityBase;
         Task<R?> ExecuteMaxQueryAsync<T, R>(QueryBuilder<T> builder) where T : EntityBase where R : struct;
-        Task<int> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase;
+        Task<long> ExecuteCountQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase;
         Task<bool> ExecuteExistsQueryAsync<T>(QueryBuilder<T> builder) where T : EntityBase;
 
         ConnectionTableStorage? GetConnectionTableStorage(string connectionTable);

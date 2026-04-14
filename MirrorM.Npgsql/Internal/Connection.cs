@@ -104,7 +104,7 @@ namespace MirrorM.Npgsql.Internal
             }
         }
 
-        public async Task<int> ExecuteCountAsync(IEntityAggregateQuerySchema schema)
+        public async Task<long> ExecuteCountAsync(IEntityAggregateQuerySchema schema)
         {
             var sql = SqlExpressionGenerator.GenerateEntityCountSql(schema);
 
@@ -112,7 +112,7 @@ namespace MirrorM.Npgsql.Internal
 
             InterceptSql(cmd);
 
-            return (int)(await cmd.ExecuteScalarAsync())!;
+            return (long)(await cmd.ExecuteScalarAsync())!;
         }
 
         public async Task<bool> ExecuteExistsAsync(IEntityAggregateQuerySchema schema)

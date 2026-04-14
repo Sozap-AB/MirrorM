@@ -19,7 +19,7 @@ namespace MirrorM
 
         Task<R> SumAsync<R>(Expression<Func<T, R>> fieldSelector);
         Task<R?> MaxAsync<R>(Expression<Func<T, R>> fieldSelector) where R : struct;
-        Task<int> CountAsync();
+        Task<long> CountAsync();
         Task<bool> AnyAsync();
 
         IAsyncEnumerable<T> ToAsyncEnumerable();
