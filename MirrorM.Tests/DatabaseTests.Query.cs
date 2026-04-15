@@ -1,5 +1,6 @@
 ﻿using MirrorM.Common;
 using MirrorM.Tests.Models;
+using MirrorM.Tests.Tools;
 
 namespace MirrorM.Tests
 {
@@ -239,6 +240,31 @@ namespace MirrorM.Tests
             await ExecuteWithDatabaseAsync(async db =>
             {
                 var powerups = await db.Query<PlayerPowerup>().ToListAsync();
+
+                var energyBoostPowerup = powerups.OfType<PlayerPowerupEnergyBoost>().First();
+                var healthBoostPowerup = powerups.OfType<PlayerPowerupHealthBoost>().First();
+
+                Assert.Equal(2.0f, energyBoostPowerup.BoostPower);
+                Assert.Equal(5.0f, healthBoostPowerup.BoostPower);
+            });
+        }
+
+        [Fact]
+        public async Task BaseTypeRawSqlQueryTest()
+        {
+            var playerId = await ExecuteWithDatabaseAndGetAsync(db =>
+            {
+                var player = new Player(db, "player1", 11);
+
+                _ = new PlayerPowerupEnergyBoost(db, player.Id, 2.0f);
+                _ = new PlayerPowerupHealthBoost(db, player.Id, 5.0f);
+
+                return Task.FromResult(player.Id);
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var powerups = await PlayerPowerup.FindByPlayerIdAsync(db, playerId).ToListAsync();
 
                 var energyBoostPowerup = powerups.OfType<PlayerPowerupEnergyBoost>().First();
                 var healthBoostPowerup = powerups.OfType<PlayerPowerupHealthBoost>().First();

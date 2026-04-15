@@ -336,25 +336,6 @@ namespace MirrorM.Internal
 
         private IEnumerable<EntityBase> GetOrSaveEntitiesToStorage(IDataReader record, IEntityQuerySchema query)
         {
-            Type DetectType(Type defaultType, IReadOnlyDictionary<string, object?> fields)
-            {
-                var subTypes = defaultType.GetCustomAttribute<EntityAttribute>()!.SubTypes;
-
-                if (subTypes != null)
-                {
-                    if (fields.TryGetValue(EntityBase.FIELD_TYPE, out var typeName))
-                    {
-                        return subTypes!.First(x => x.Name == (string)typeName!);
-                    }
-                    else
-                    {
-                        return subTypes!.First();
-                    }
-                }
-
-                return defaultType;
-            }
-
             IEnumerable<Type> CollectEntityTypes()
             {
                 yield return query.EntityType;
@@ -430,10 +411,29 @@ namespace MirrorM.Internal
             else
             {
                 return CreateEntity<T>(
-                    typeof(T),
+                    DetectType(typeof(T), collection),
                     new FieldCollection(collection)
                 );
             }
+        }
+
+        private static Type DetectType(Type defaultType, IReadOnlyDictionary<string, object?> fields)
+        {
+            var subTypes = defaultType.GetCustomAttribute<EntityAttribute>()!.SubTypes;
+
+            if (subTypes != null)
+            {
+                if (fields.TryGetValue(EntityBase.FIELD_TYPE, out var typeName))
+                {
+                    return subTypes!.First(x => x.Name == (string)typeName!);
+                }
+                else
+                {
+                    return subTypes!.First();
+                }
+            }
+
+            return defaultType;
         }
 
         public void Dispose()

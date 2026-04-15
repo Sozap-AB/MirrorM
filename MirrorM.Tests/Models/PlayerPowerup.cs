@@ -1,11 +1,14 @@
 ﻿using MirrorM.Attributes;
+using MirrorM.Common;
 using MirrorM.Relations;
 
 namespace MirrorM.Tests.Models
 {
-    [Entity("player_powerups", subTypes: [typeof(PlayerPowerupHealthBoost), typeof(PlayerPowerupEnergyBoost)])]
+    [Entity(TABLE, subTypes: [typeof(PlayerPowerupHealthBoost), typeof(PlayerPowerupEnergyBoost)])]
     public abstract class PlayerPowerup : EntityBase
     {
+        public const string TABLE = "player_powerups";
+
         private const string FIELD_USER_ID = "player_id";
 
         [Field(FIELD_USER_ID)]
@@ -24,6 +27,14 @@ namespace MirrorM.Tests.Models
 
         protected PlayerPowerup(IContext db, IFields fields) : base(db, fields)
         {
+        }
+
+        public static IAsyncEnumerable<PlayerPowerup> FindByPlayerIdAsync(IContext db, Guid playerId)
+        {
+            return db.ExecuteSqlQueryAsync<PlayerPowerup>(
+                $"SELECT m.* FROM {TABLE} m WHERE m.{FIELD_USER_ID} = @player_id",
+                new SqlParameter("player_id", playerId)
+            );
         }
     }
 }
