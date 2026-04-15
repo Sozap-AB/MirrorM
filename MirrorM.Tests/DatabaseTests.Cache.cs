@@ -56,5 +56,23 @@ namespace MirrorM.Tests
                 db.SetSqlInterceptor(null);
             });
         }
+
+        [Fact]
+        public async Task SameFieldDifferentTypesCacheTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                _ = new Player(db, "name1", 5);
+                _ = new PlayerGroup(db, "name1", 10);
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                Assert.Equal(5, (await db.Query<Player>().Where(x => x.Name == "name1").ToListAsync()).First().Level);
+                Assert.Equal(10, (await db.Query<PlayerGroup>().Where(x => x.Name == "name1").ToListAsync()).First().MinLevel);
+            });
+        }
     }
 }
