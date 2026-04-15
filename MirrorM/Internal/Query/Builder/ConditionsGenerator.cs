@@ -15,6 +15,9 @@ namespace MirrorM.Internal.Query.Builder
             switch (exp)
             {
                 case MemberExpression memberExpression:
+                    if (memberExpression.Expression != entity)
+                        return false;
+
                     var fieldInfo = memberExpression.Member.GetCustomAttribute<FieldAttribute>();
 
                     if (fieldInfo != null)

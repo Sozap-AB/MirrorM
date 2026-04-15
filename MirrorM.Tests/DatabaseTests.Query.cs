@@ -221,6 +221,11 @@ namespace MirrorM.Tests
                 var group = await db.Query<PlayerGroup>().FirstAsync(x => x.MinLevel <= player.Level);
 
                 Assert.Equal("group1", group.Name);
+
+                // TestMathRoutines.Subtract(player.Level, 6) should be evaluated
+                var sameGroup = await db.Query<PlayerGroup>().FirstAsync(x => x.MinLevel > TestMathRoutines.Subtract(player.Level, 6));
+
+                Assert.Equal("group1", sameGroup.Name);
             });
         }
 
