@@ -255,6 +255,29 @@ namespace MirrorM.Tests
         }
 
         [Fact]
+        public async Task ChildTypeQueryTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                var player = new Player(db, "player1", 11);
+
+                _ = new PlayerPowerupEnergyBoost(db, player.Id, 2.0f);
+                _ = new PlayerPowerupHealthBoost(db, player.Id, 5.0f);
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var energyBoostPowerup = await db.Query<PlayerPowerupEnergyBoost>().FirstAsync();
+                var healthBoostPowerup = await db.Query<PlayerPowerupHealthBoost>().FirstAsync();
+
+                Assert.Equal(2.0f, energyBoostPowerup.BoostPower);
+                Assert.Equal(5.0f, healthBoostPowerup.BoostPower);
+            });
+        }
+
+        [Fact]
         public async Task BaseTypeRawSqlQueryTest()
         {
             var playerId = await ExecuteWithDatabaseAndGetAsync(db =>

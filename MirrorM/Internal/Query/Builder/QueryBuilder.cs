@@ -1,10 +1,12 @@
 ﻿using MirrorM.AdapterInterface.Query;
 using MirrorM.AdapterInterface.Query.Conditions;
+using MirrorM.Attributes;
 using MirrorM.Common;
 using MirrorM.Internal.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace MirrorM.Internal.Query.Builder
@@ -30,6 +32,22 @@ namespace MirrorM.Internal.Query.Builder
         public QueryBuilder(IContextInternal context)
         {
             Context = context;
+
+            AddTypeConditionIfNeeded();
+        }
+
+        private void AddTypeConditionIfNeeded()
+        {
+            var type = typeof(T);
+
+            if (type.GetCustomAttribute<EntityAttribute>(false) == null)
+                ConditionsWritable.Add(
+                    new ExpressionBinary(
+                        ExpressionBinary.Operation.Equal,
+                        new ExpressionField(EntityBase.FIELD_TYPE),
+                        new ExpressionConst(type.Name)
+                    )
+                );
         }
 
         public IQuery<T> Where(Expression<Func<T, bool>> predicate)
