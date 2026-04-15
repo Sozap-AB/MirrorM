@@ -10,7 +10,7 @@
             set => SetValue(FIELD_HEALTH_BOOST_POWER, value);
         }
 
-        public PlayerPowerupHealthBoost(IContext db, float boostPower) : base(db)
+        public PlayerPowerupHealthBoost(IContext db, Guid playerId, float boostPower) : base(db, playerId)
         {
             BoostPower = boostPower;
         }

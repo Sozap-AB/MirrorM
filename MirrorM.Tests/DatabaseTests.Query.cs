@@ -222,5 +222,30 @@ namespace MirrorM.Tests
                 Assert.Equal("group1", group.Name);
             });
         }
+
+        [Fact]
+        public async Task BaseTypeQueryTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                var player = new Player(db, "player1", 11);
+
+                _ = new PlayerPowerupEnergyBoost(db, player.Id, 2.0f);
+                _ = new PlayerPowerupHealthBoost(db, player.Id, 5.0f);
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var powerups = await db.Query<PlayerPowerup>().ToListAsync();
+
+                var energyBoostPowerup = powerups.OfType<PlayerPowerupEnergyBoost>().First();
+                var healthBoostPowerup = powerups.OfType<PlayerPowerupHealthBoost>().First();
+
+                Assert.Equal(2.0f, energyBoostPowerup.BoostPower);
+                Assert.Equal(5.0f, healthBoostPowerup.BoostPower);
+            });
+        }
     }
 }

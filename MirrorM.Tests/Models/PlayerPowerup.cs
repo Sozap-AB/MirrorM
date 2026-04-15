@@ -17,8 +17,9 @@ namespace MirrorM.Tests.Models
 
         public IRelationFieldToId<Player> User => GetRelationFieldToId<PlayerPowerup, Player>(x => x.PlayerId);
 
-        protected PlayerPowerup(IContext db) : base(db)
+        protected PlayerPowerup(IContext db, Guid playerId) : base(db)
         {
+            PlayerId = playerId;
         }
 
         protected PlayerPowerup(IContext db, IFields fields) : base(db, fields)

@@ -10,7 +10,7 @@
             set => SetValue(FIELD_ENERGY_BOOST_POWER, value);
         }
 
-        public PlayerPowerupEnergyBoost(IContext db, float boostPower) : base(db)
+        public PlayerPowerupEnergyBoost(IContext db, Guid playerId, float boostPower) : base(db, playerId)
         {
             BoostPower = boostPower;
         }
