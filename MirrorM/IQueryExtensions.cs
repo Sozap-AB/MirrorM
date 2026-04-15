@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MirrorM.Internal.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace MirrorM
     {
         public static async Task<T> FirstAsync<T>(this IQuery<T> query) where T : EntityBase
         {
-            return await query.Take(1).FirstOrDefaultAsync() ?? throw new InvalidOperationException();
+            return await query.Take(1).FirstOrDefaultAsync() ?? throw new InvalidOperationException("Sequence contains no items.");
         }
 
         public static async Task<T> FirstAsync<T>(this IQuery<T> query, Expression<Func<T, bool>> predicate) where T : EntityBase
@@ -19,12 +20,7 @@ namespace MirrorM
 
         public static async Task<T?> FirstOrDefaultAsync<T>(this IQuery<T> query) where T : EntityBase
         {
-            await using var enumerator = query.Take(1).ToAsyncEnumerable().GetAsyncEnumerator();
-
-            if (await enumerator.MoveNextAsync())
-                return enumerator.Current;
-
-            return null;
+            return await query.Take(1).ToAsyncEnumerable().SingleOrDefaultAsync();
         }
 
         public static Task<bool> AnyAsync<T>(this IQuery<T> query, Expression<Func<T, bool>> predicate) where T : EntityBase

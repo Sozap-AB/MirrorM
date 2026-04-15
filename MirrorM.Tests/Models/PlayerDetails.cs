@@ -1,6 +1,7 @@
 ﻿using MirrorM.Attributes;
 using MirrorM.Common;
 using MirrorM.Relations;
+using MirrorM.Tests.Tools;
 using System.Text.Json.Nodes;
 
 namespace MirrorM.Tests.Models
@@ -45,19 +46,14 @@ namespace MirrorM.Tests.Models
 
         public async static Task<PlayerDetails> InstantInsertAsync(IContext db, Guid playerId, int metaDataNumber)
         {
-            await using var enumerator = db.ExecuteSqlQueryAsync<PlayerDetails>(
+            return (await db.ExecuteSqlQueryAsync<PlayerDetails>(
                 $"INSERT INTO {TABLE} VALUES(@id, @player_id, @meta_data, 1, @now, @now) " +
                 $"RETURNING *",
                 new SqlParameter("id", Guid.NewGuid()),
                 new SqlParameter("player_id", playerId),
                 new SqlParameter("meta_data", JsonValue.Create(metaDataNumber)),
                 new SqlParameter("now", DateTimeOffset.UtcNow)
-            ).GetAsyncEnumerator();
-
-            if (await enumerator.MoveNextAsync())
-                return enumerator.Current;
-
-            throw new InvalidOperationException();
+            ).ToListAsync()).First();
         }
     }
 }
