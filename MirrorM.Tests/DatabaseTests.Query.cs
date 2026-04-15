@@ -278,5 +278,28 @@ namespace MirrorM.Tests
                 Assert.Equal(5.0f, healthBoostPowerup.BoostPower);
             });
         }
+
+        [Fact]
+        public async Task QueryWithOptionalConvertTest()
+        {
+            Guid? playerId = null;
+            Guid detailsId = Guid.Empty;
+
+            (playerId, detailsId) = await ExecuteWithDatabaseAndGetAsync(db =>
+            {
+                var player = new Player(db, "player1", 1);
+
+                var details = new PlayerDetails(db, player);
+
+                return Task.FromResult((player.Id, details.Id));
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                var details = await db.Query<PlayerDetails>().FirstAsync(x => x.PlayerId == playerId);
+
+                Assert.Equal(detailsId, details.Id);
+            });
+        }
     }
 }

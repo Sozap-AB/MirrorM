@@ -165,6 +165,11 @@ namespace MirrorM.Internal.Query.Builder
                 return new ExpressionNot(Parse(entity, unaryExpression.Operand));
             }
 
+            if (unaryExpression.NodeType == ExpressionType.Convert)
+            {
+                return Parse(entity, unaryExpression.Operand);
+            }
+
             throw new NotSupportedException($"Unary expression of type {unaryExpression.NodeType} is not supported.");
         }
 
