@@ -282,16 +282,16 @@ namespace MirrorM.Internal
             return true;
         }
 
-        private IEnumerable<T> GetFilteredAndSortedEntities<T>(IEntityQuerySchema constraints) where T : EntityBase
+        private IEnumerable<T> GetFilteredAndSortedEntities<T>(IEntityQuerySchema schema) where T : EntityBase
         {
             IEnumerable<T> result = EntityStorage
                 .Select(x => x.Value)
                 .OfType<T>()
-                .Where(e => FilterEntity(e, constraints.Conditions));
+                .Where(e => FilterEntity(e, schema.Conditions));
 
             IOrderedEnumerable<T>? orderedResult = null;
 
-            foreach (var sorting in constraints.Sortings)
+            foreach (var sorting in schema.Sortings)
             {
                 if (orderedResult == null)
                 {
@@ -307,7 +307,12 @@ namespace MirrorM.Internal
                 }
             }
 
-            return orderedResult ?? result;
+            result = orderedResult ?? result;
+
+            if (schema.TakeCount.HasValue)
+                result = result.Take(schema.TakeCount.Value);
+
+            return result;
         }
 
         private bool FilterEntity(EntityBase entity, IEnumerable<ExpressionBase> conditions)
