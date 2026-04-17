@@ -4,7 +4,7 @@ MirrorM is an ORM for .NET projects. Currently works with PostgreSQL databases o
 
   * In-memory context: what is in the memory context is not just cache, it's the extension of the database. Which means the following:
 	* Models cannot be duplicated in the same context. Even manually you cannot create a model representing the same database row. Same object is gonna be returned by every query, relation and even raw-SQL query, which means no more outdated objects, changes overwrites and other inconsistencies.
-	* Queries will respect in-memory changes in general. There are some reasonable exceptions to this rule (explained here), but in the majority of cases it works just as you expect it to work.
+	* Queries will respect in-memory changes in general. There are some reasonable exceptions to this rule (explanation TBD), but in the majority of cases it works just as you expect it to work.
 	* Changes uploaded to the database in batches (usually one batch at the end of work to save all changes at once), which reduces the number of database calls.
   * LINQ+SQL oriented design: with MirrorM it's easy to combine LINQ queries with raw SQL queries, which gives you the best of both worlds. You can write complex queries in SQL and still get all the benefits of in-memory context, and write other queries using convenient LINQ-like API.
   * Simple generated SQL: MirrorM generates readable SQL queries, which you might expect writing yourself, doing the same job.
@@ -18,7 +18,7 @@ Can be installed into .NET 6.0+ projects. Currently works with PostgreSQL databa
 
 1. Install NuGet package:
     ```sh
-    Install-Package MirrorM
+    Install-Package MirrorM.Npgsql
     ```
 2. Create database and tables:
     ```sql
