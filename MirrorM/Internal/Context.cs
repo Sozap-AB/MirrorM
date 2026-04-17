@@ -141,11 +141,12 @@ namespace MirrorM.Internal
         {
             // Execution plan:
 
-            // 1. Check against cache, if cache is covering the query, execute conditions & sorting against storage
-            // 2. Build SQL query and execute, put result to storage
-            // 2.1 By default, we're ignoreing returned results after putting it to storage and filtering & sorting storage to get result
-            // 2.2 If query contains Skip or Take, we're taking returned results and filtering every item of it
-            // 3. Execute conditions & sorting against storage
+            // 1. Try to handle query with fast track, if possible (currently only covers getById case)
+            // 2. Check against cache, if cache is covering the query, execute conditions & sorting against storage
+            // 3. Build SQL query and execute, put result to storage
+            // 4.1 By default, we're ignoreing returned results after putting it to storage and filtering & sorting storage to get result
+            // 4.2 If query contains Skip or Take with sortings, we're taking returned results and filtering every item of it
+            // 5. Execute conditions & sorting against storage
 
             // trying the easy way to handle query
 
@@ -160,10 +161,11 @@ namespace MirrorM.Internal
             // calculating strategy and working with cache
 
             var strategy = CalculateGetQueryStrategy(builder);
+            QueryCacheItem? currentCacheItem = null;
 
             if (IsQueryCachable(builder))
             {
-                var currentCacheItem = new QueryCacheItem(builder.Conditions);
+                currentCacheItem = new QueryCacheItem(builder);
 
                 if (ExecutedQueriesCache.Any(ci => ci.IsCoveringCacheItem(currentCacheItem)))
                 {
@@ -172,8 +174,6 @@ namespace MirrorM.Internal
 
                     yield break;
                 }
-
-                ExecutedQueriesCache.Add(currentCacheItem);
             }
 
             // executing SQL and saving to storage
@@ -201,6 +201,9 @@ namespace MirrorM.Internal
 
             if (strategy == GetQueryStrategy.UseDbSelection)
                 yield break;
+
+            if (currentCacheItem != null)
+                ExecutedQueriesCache.Add(currentCacheItem);
 
             // filtering and sorting against storage
 
