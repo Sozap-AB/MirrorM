@@ -74,5 +74,30 @@ namespace MirrorM.Tests
                 Assert.Equal(10, (await db.Query<PlayerGroup>().Where(x => x.Name == "name1").ToListAsync()).First().MinLevel);
             });
         }
+
+        [Fact]
+        public async Task TakeQueryCacheTest()
+        {
+            await ExecuteWithDatabaseAsync(db =>
+            {
+                _ = new Player(db, "player1", 3);
+                _ = new Player(db, "player2", 4);
+                _ = new Player(db, "player3", 5);
+
+                return Task.CompletedTask;
+            });
+
+            await ExecuteWithDatabaseAsync(async db =>
+            {
+                Assert.Equal("player3", (await db.Query<Player>().OrderByDescending(x => x.Level).Take(2).FirstAsync()).Name);
+
+                db.SetSqlInterceptor((sql, parameters) => { Assert.Fail("SQL executed, cache not used!"); });
+
+                Assert.Equal("player3", (await db.Query<Player>().OrderByDescending(x => x.Level).Take(1).FirstAsync()).Name);
+                Assert.Equal("player3", (await db.Query<Player>().OrderByDescending(x => x.Level).Take(2).FirstAsync()).Name);
+
+                db.SetSqlInterceptor(null);
+            });
+        }
     }
 }

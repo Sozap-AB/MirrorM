@@ -266,20 +266,12 @@ namespace MirrorM.Internal
             if (schema.SkipCount > 0)
                 return GetQueryStrategy.UseDbSelection;
 
-            if (schema.Sortings.Any() && schema.TakeCount.HasValue)
-                return GetQueryStrategy.UseDbSelection;
-
             return GetQueryStrategy.Default;
         }
 
         private static bool IsQueryCachable(IEntityQuerySchema schema)
         {
             if (schema.SkipCount > 0)
-                return false;
-
-            //TODO: we can probably cache queries with TakeCount,
-            //but that requires additional research
-            if (schema.TakeCount.HasValue)
                 return false;
 
             return true;

@@ -1,4 +1,6 @@
-﻿namespace MirrorM.AdapterInterface.Query
+﻿using System;
+
+namespace MirrorM.AdapterInterface.Query
 {
     public class Sorting
     {
@@ -9,6 +11,19 @@
         {
             PropertyName = propertyName;
             Ascending = ascending;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Sorting s)
+                return PropertyName == s.PropertyName && Ascending == s.Ascending;
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(PropertyName, Ascending);
         }
     }
 }
